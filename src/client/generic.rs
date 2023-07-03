@@ -1,30 +1,15 @@
+use derive_more::From;
+
 use crate::model::{
     danbooru::DanbooruRating, gelbooru::GelbooruRating, safebooru::SafebooruRating,
 };
 use std::fmt;
 
+#[derive(From)]
 pub enum Rating {
     Danbooru(DanbooruRating),
     Gelbooru(GelbooruRating),
     Safebooru(SafebooruRating),
-}
-
-impl From<DanbooruRating> for Rating {
-    fn from(value: DanbooruRating) -> Self {
-        Rating::Danbooru(value)
-    }
-}
-
-impl From<GelbooruRating> for Rating {
-    fn from(value: GelbooruRating) -> Self {
-        Rating::Gelbooru(value)
-    }
-}
-
-impl From<SafebooruRating> for Rating {
-    fn from(value: SafebooruRating) -> Self {
-        Rating::Safebooru(value)
-    }
 }
 
 #[derive(Debug, Clone)]

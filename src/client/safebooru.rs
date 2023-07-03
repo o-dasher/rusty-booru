@@ -1,15 +1,11 @@
 use async_trait::async_trait;
+use derive_more::From;
 
 use super::{Client, ClientBuilder};
 use crate::model::safebooru::SafebooruPost;
 
+#[derive(From)]
 pub struct SafebooruClient(ClientBuilder<Self>);
-
-impl From<ClientBuilder<Self>> for SafebooruClient {
-    fn from(value: ClientBuilder<Self>) -> Self {
-        Self(value)
-    }
-}
 
 #[async_trait]
 impl Client for SafebooruClient {

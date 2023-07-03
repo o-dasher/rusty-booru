@@ -1,16 +1,12 @@
 use async_trait::async_trait;
+use derive_more::From;
 
 use super::{Client, ClientBuilder};
 use crate::model::gelbooru::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
+#[derive(From)]
 pub struct GelbooruClient(ClientBuilder<Self>);
-
-impl From<ClientBuilder<Self>> for GelbooruClient {
-    fn from(value: ClientBuilder<Self>) -> Self {
-        Self(value)
-    }
-}
 
 #[async_trait]
 impl Client for GelbooruClient {

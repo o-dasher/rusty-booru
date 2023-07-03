@@ -1,5 +1,6 @@
 use super::{Client, ClientBuilder};
 use crate::model::danbooru::*;
+use derive_more::From;
 
 use async_trait::async_trait;
 use reqwest::{header, header::HeaderMap};
@@ -15,13 +16,8 @@ pub fn get_headers() -> HeaderMap {
 }
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
+#[derive(From)]
 pub struct DanbooruClient(ClientBuilder<Self>);
-
-impl From<ClientBuilder<Self>> for DanbooruClient {
-    fn from(value: ClientBuilder<Self>) -> Self {
-        Self(value)
-    }
-}
 
 #[async_trait]
 impl Client for DanbooruClient {
