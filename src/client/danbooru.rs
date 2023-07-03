@@ -27,16 +27,10 @@ impl Client<DanbooruRating> for DanbooruClient {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
 
-    fn validate(
-        builder: &ClientBuilder<DanbooruRating, Self>,
-        validates: ValidationType,
-    ) -> Result<()> {
+    fn validate(validates: ValidationType) -> Result<()> {
         match validates {
-            ValidationType::Tags => {
-                ensure!(
-                    builder.tags.len() <= 1,
-                    "Danbooru only allows two tags per query"
-                );
+            ValidationType::Tags(tags) => {
+                ensure!(tags.len() <= 1, "Danbooru only allows two tags per query");
             }
         }
 

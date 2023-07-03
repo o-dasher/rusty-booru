@@ -1,4 +1,4 @@
-use std::{any::Any, fmt::Display};
+use std::{ fmt::Display};
 
 use anyhow::Result;
 
@@ -15,15 +15,15 @@ pub struct ClientBuilder<R: Into<Rating> + Display, T: Client<R>> {
     client: reqwest::Client,
     key: Option<String>,
     user: Option<String>,
-    pub(super) tags: Vec<String>,
+    tags: Vec<String>,
     limit: u32,
     url: String,
     _marker_t: std::marker::PhantomData<T>,
     _marker_r: std::marker::PhantomData<R>,
 }
 
-pub enum ValidationType {
-    Tags,
+pub enum ValidationType<'a> {
+    Tags(&'a Vec<String>),
 }
 
 #[async_trait]
@@ -40,14 +40,14 @@ pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> + 'sta
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
 
-    fn validate(_builder: &ClientBuilder<R, Self>, _validates: ValidationType) -> Result<()> {
+    fn validate(_validates: ValidationType) -> Result<()> {
         Ok(())
     }
 }
 
-impl<R: Into<Rating> + Display, T: Client<R> + Any> ClientBuilder<R, T> {
+impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
     fn ensure_valid(&self, validates: ValidationType) {
-        if let Err(e) = T::validate(self, validates) {
+        if let Err(e) = T::validate(validates) {
             panic!("{}", e)
         }
     }
@@ -74,7 +74,7 @@ impl<R: Into<Rating> + Display, T: Client<R> + Any> ClientBuilder<R, T> {
 
     /// Add a tag to the query
     pub fn tag<S: Into<String>>(mut self, tag: S) -> Self {
-        self.ensure_valid(ValidationType::Tags);
+        self.ensure_valid(ValidationType::Tags(&self.tags));
         self.tags.push(tag.into());
         self
     }
@@ -129,7 +129,7 @@ impl<R: Into<Rating> + Display, T: Client<R> + Any> ClientBuilder<R, T> {
     }
 }
 
-impl<R: Into<Rating> + Display, T: Client<R> + Any> Default for ClientBuilder<R, T> {
+impl<R: Into<Rating> + Display, T: Client<R>> Default for ClientBuilder<R, T> {
     fn default() -> Self {
         Self::new()
     }
