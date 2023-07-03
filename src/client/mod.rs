@@ -1,4 +1,4 @@
-use std::{ fmt::Display};
+use std::fmt::Display;
 
 use anyhow::Result;
 
@@ -27,7 +27,7 @@ pub enum ValidationType<'a> {
 }
 
 #[async_trait]
-pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> + 'static {
+pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> {
     type Post;
 
     const URL: &'static str;
@@ -79,11 +79,7 @@ impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
         self
     }
 
-    // REFACTOR: This can probably be cleaned up.
-    /// Add the client compatible rating. Will panic if the rating is not compatible.
-    /// - [`DanbooruRating`](crate::model::DanbooruRating) for DanbooruClient
-    /// - [`GelbooruRating`](crate::model::GelbooruRating) for GelbooruClient
-    /// - [`SafebooruRating`](crate::model::SafebooruRating) for SafebooruClient
+    /// Add the client compatible rating.
     pub fn rating(mut self, rating: R) -> Self {
         self.tags.push(format!("rating:{}", rating));
         self
