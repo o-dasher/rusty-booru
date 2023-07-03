@@ -6,10 +6,10 @@ use crate::model::gelbooru::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]
-pub struct GelbooruClient(ClientBuilder<Self>);
+pub struct GelbooruClient(ClientBuilder<GelbooruRating, Self>);
 
 #[async_trait]
-impl Client for GelbooruClient {
+impl Client<GelbooruRating> for GelbooruClient {
     type Post = GelbooruPost;
 
     const URL: &'static str = "https://gelbooru.com";

@@ -2,13 +2,13 @@ use async_trait::async_trait;
 use derive_more::From;
 
 use super::{Client, ClientBuilder};
-use crate::model::safebooru::SafebooruPost;
+use crate::{model::safebooru::SafebooruPost, safebooru::SafebooruRating};
 
 #[derive(From)]
-pub struct SafebooruClient(ClientBuilder<Self>);
+pub struct SafebooruClient(ClientBuilder<SafebooruRating, Self>);
 
 #[async_trait]
-impl Client for SafebooruClient {
+impl Client<SafebooruRating> for SafebooruClient {
     type Post = SafebooruPost;
 
     const URL: &'static str = "https://safebooru.org";

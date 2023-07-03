@@ -1,45 +1,57 @@
-use std::{any::{Any, TypeId}, fmt::Display};
+use std::{any::Any, fmt::Display};
+
+use anyhow::Result;
 
 use async_trait::async_trait;
 
-use self::{
-    danbooru::DanbooruClient,
-    gelbooru::GelbooruClient,
-    generic::{Rating, Sort},
-    safebooru::SafebooruClient,
-};
+use self::generic::{Rating, Sort};
 
 pub mod danbooru;
 pub mod gelbooru;
 pub mod generic;
 pub mod safebooru;
 
-pub struct ClientBuilder<T: Client> {
+pub struct ClientBuilder<R: Into<Rating> + Display, T: Client<R>> {
     client: reqwest::Client,
     key: Option<String>,
     user: Option<String>,
-    tags: Vec<String>,
+    pub(super) tags: Vec<String>,
     limit: u32,
     url: String,
-    _marker: std::marker::PhantomData<T>,
+    _marker_t: std::marker::PhantomData<T>,
+    _marker_r: std::marker::PhantomData<R>,
+}
+
+pub enum ValidationType {
+    Tags,
 }
 
 #[async_trait]
-pub trait Client: From<ClientBuilder<Self>> + Any {
+pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> + 'static {
     type Post;
 
     const URL: &'static str;
     const SORT: &'static str;
 
-    fn builder() -> ClientBuilder<Self> {
+    fn builder() -> ClientBuilder<R, Self> {
         ClientBuilder::new()
     }
 
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
+
+    fn validate(_builder: &ClientBuilder<R, Self>, _validates: ValidationType) -> Result<()> {
+        Ok(())
+    }
 }
 
-impl<T: Client + Any> ClientBuilder<T> {
+impl<R: Into<Rating> + Display, T: Client<R> + Any> ClientBuilder<R, T> {
+    fn ensure_valid(&self, validates: ValidationType) {
+        if let Err(e) = T::validate(self, validates) {
+            panic!("{}", e)
+        }
+    }
+
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -48,7 +60,8 @@ impl<T: Client + Any> ClientBuilder<T> {
             tags: vec![],
             limit: 100,
             url: T::URL.to_string(),
-            _marker: std::marker::PhantomData,
+            _marker_r: std::marker::PhantomData,
+            _marker_t: std::marker::PhantomData,
         }
     }
 
@@ -61,9 +74,7 @@ impl<T: Client + Any> ClientBuilder<T> {
 
     /// Add a tag to the query
     pub fn tag<S: Into<String>>(mut self, tag: S) -> Self {
-        if TypeId::of::<DanbooruClient>() == TypeId::of::<T>() && self.tags.len() > 1 {
-            panic!("Danbooru only allows 2 tags per query")
-        }
+        self.ensure_valid(ValidationType::Tags);
         self.tags.push(tag.into());
         self
     }
@@ -73,37 +84,8 @@ impl<T: Client + Any> ClientBuilder<T> {
     /// - [`DanbooruRating`](crate::model::DanbooruRating) for DanbooruClient
     /// - [`GelbooruRating`](crate::model::GelbooruRating) for GelbooruClient
     /// - [`SafebooruRating`](crate::model::SafebooruRating) for SafebooruClient
-    pub fn rating<R: Into<Rating>>(mut self, rating: R) -> Self {
-        let rating_tag = match rating.into() {
-            Rating::Danbooru(rating) => {
-                assert_eq!(
-                    TypeId::of::<T>(),
-                    TypeId::of::<DanbooruClient>(),
-                    "{:?} `ClientBuilder` but tried to apply a Danbooru rating to it.",
-                    TypeId::of::<T>(),
-                );
-                format!("rating:{}", rating)
-            }
-            Rating::Gelbooru(rating) => {
-                assert_eq!(
-                    TypeId::of::<T>(),
-                    TypeId::of::<GelbooruClient>(),
-                    "{:?} `ClientBuilder` but tried to apply a Gelbooru rating to it.",
-                    TypeId::of::<T>(),
-                );
-                format!("rating:{}", rating)
-            }
-            Rating::Safebooru(rating) => {
-                assert_eq!(
-                    TypeId::of::<T>(),
-                    TypeId::of::<SafebooruClient>(),
-                    "{:?} `ClientBuilder` but tried to apply a Safebooru rating to it.",
-                    TypeId::of::<T>(),
-                );
-                format!("rating:{}", rating)
-            }
-        };
-        self.tags.push(rating_tag);
+    pub fn rating(mut self, rating: R) -> Self {
+        self.tags.push(format!("rating:{}", rating));
         self
     }
 
@@ -147,7 +129,7 @@ impl<T: Client + Any> ClientBuilder<T> {
     }
 }
 
-impl<T: Client + Any> Default for ClientBuilder<T> {
+impl<R: Into<Rating> + Display, T: Client<R> + Any> Default for ClientBuilder<R, T> {
     fn default() -> Self {
         Self::new()
     }

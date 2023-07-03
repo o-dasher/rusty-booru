@@ -1,5 +1,6 @@
-use super::{Client, ClientBuilder};
+use super::{Client, ClientBuilder, ValidationType};
 use crate::model::danbooru::*;
+use anyhow::{ensure, Result};
 use derive_more::From;
 
 use async_trait::async_trait;
@@ -17,14 +18,30 @@ pub fn get_headers() -> HeaderMap {
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
 #[derive(From)]
-pub struct DanbooruClient(ClientBuilder<Self>);
+pub struct DanbooruClient(ClientBuilder<DanbooruRating, Self>);
 
 #[async_trait]
-impl Client for DanbooruClient {
+impl Client<DanbooruRating> for DanbooruClient {
     type Post = DanbooruPost;
 
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
+
+    fn validate(
+        builder: &ClientBuilder<DanbooruRating, Self>,
+        validates: ValidationType,
+    ) -> Result<()> {
+        match validates {
+            ValidationType::Tags => {
+                ensure!(
+                    builder.tags.len() <= 1,
+                    "Danbooru only allows two tags per query"
+                );
+            }
+        }
+
+        Ok(())
+    }
 
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
