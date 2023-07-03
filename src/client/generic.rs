@@ -1,11 +1,11 @@
 use derive_more::From;
 use strum::Display;
 
-use crate::model::{
-    danbooru::DanbooruRating, gelbooru::GelbooruRating, safebooru::SafebooruRating,
+use crate::{
+    model::{danbooru::DanbooruRating, gelbooru::GelbooruRating, safebooru::SafebooruRating},
 };
 
-#[derive(From)]
+#[derive(From, Display)]
 pub enum Rating {
     Danbooru(DanbooruRating),
     Gelbooru(GelbooruRating),
