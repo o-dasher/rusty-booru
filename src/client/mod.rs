@@ -72,17 +72,20 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
         self
     }
 
-    /// Add a tag to the query
-    pub fn tag<S: Into<String>>(mut self, tag: S) -> Self {
-        self.ensure_valid(ValidationType::Tags(&self.tags));
-        self.tags.push(tag.into());
+    fn unchecked_tag(mut self, tag: String) -> Self {
+        self.tags.push(tag);
         self
     }
 
+    /// Add a tag to the query
+    pub fn tag<S: Into<String>>(self, tag: S) -> Self {
+        self.ensure_valid(ValidationType::Tags(&self.tags));
+        self.unchecked_tag(tag.into())
+    }
+
     /// Add the client compatible rating.
-    pub fn rating(mut self, rating: R) -> Self {
-        self.tags.push(format!("rating:{}", rating));
-        self
+    pub fn rating(self, rating: R) -> Self {
+        self.unchecked_tag(format!("rating:{}", rating))
     }
 
     /// Set how many posts you want to retrieve (100 is the default and maximum)
@@ -92,21 +95,18 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
     }
 
     /// Retrieves the posts in a random order
-    pub fn random(mut self) -> Self {
-        self.tags.push(format!("{}:random", T::SORT));
-        self
+    pub fn random(self) -> Self {
+        self.unchecked_tag(format!("{}:random", T::SORT))
     }
 
     /// Add a [`Sort`] to the query
-    pub fn sort(mut self, order: Sort) -> Self {
-        self.tags.push(format!("{}:{}", T::SORT, order));
-        self
+    pub fn sort(self, order: Sort) -> Self {
+        self.unchecked_tag(format!("{}:{}", T::SORT, order))
     }
 
     /// Blacklist a tag from the query
-    pub fn blacklist_tag<S: Display>(mut self, tag: S) -> Self {
-        self.tags.push(format!("-{}", tag));
-        self
+    pub fn blacklist_tag<S: Display>(self, tag: S) -> Self {
+        self.unchecked_tag(format!("-{}", tag))
     }
 
     /// Change the default url for the client
