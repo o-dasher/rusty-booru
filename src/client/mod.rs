@@ -93,10 +93,6 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
 
     /// Retrieves the posts in a random order
     pub fn random(mut self) -> Self {
-        // let random_tag = match TypeId::of::<T>() {
-        //     ClientType::Danbooru => "order:random",
-        //     ClientType::Gelbooru => "sort:random",
-        // };
         self.tags.push(format!("{}:random", T::SORT));
         self
     }
