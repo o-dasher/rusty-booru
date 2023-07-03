@@ -49,6 +49,7 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
             .await?
             .json::<DanbooruPost>()
             .await?;
+
         Ok(response)
     }
 

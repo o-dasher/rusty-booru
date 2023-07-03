@@ -31,12 +31,10 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
             .await?
             .json::<Vec<SafebooruPost>>()
             .await?;
+
         // FIXME: Assumes there is a post with the given id. Same is true for the
         // Gelbooru client.
-        Ok(response
-            .into_iter()
-            .next()
-            .expect("Requested an id that does not exist."))
+        Ok(response.into_iter().next().unwrap())
     }
 
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {

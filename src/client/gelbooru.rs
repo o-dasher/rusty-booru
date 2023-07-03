@@ -9,7 +9,7 @@ use crate::model::gelbooru::*;
 pub struct GelbooruClient<'a>(ClientBuilder<'a, GelbooruRating, Self>);
 
 #[async_trait]
-impl <'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
+impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
     type Post = GelbooruPost;
 
     const URL: &'static str = "https://gelbooru.com";
@@ -34,7 +34,7 @@ impl <'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
             .json::<GelbooruResponse>()
             .await?;
 
-        Ok(response.posts[0].clone())
+        Ok(response.posts.into_iter().next().unwrap())
     }
 
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
