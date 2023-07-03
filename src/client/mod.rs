@@ -11,13 +11,13 @@ pub mod gelbooru;
 pub mod generic;
 pub mod safebooru;
 
-pub struct ClientBuilder<R: Into<Rating> + Display, T: Client<R>> {
+pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
     client: reqwest::Client,
     key: Option<String>,
     user: Option<String>,
     tags: Vec<String>,
     limit: u32,
-    url: String,
+    url: &'a str,
     _marker_t: std::marker::PhantomData<T>,
     _marker_r: std::marker::PhantomData<R>,
 }
@@ -27,13 +27,13 @@ pub enum ValidationType<'a> {
 }
 
 #[async_trait]
-pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> {
+pub trait Client<'a, R: Into<Rating> + Display>: From<ClientBuilder<'a, R, Self>> {
     type Post;
 
     const URL: &'static str;
     const SORT: &'static str;
 
-    fn builder() -> ClientBuilder<R, Self> {
+    fn builder() -> ClientBuilder<'a, R, Self> {
         ClientBuilder::new()
     }
 
@@ -45,7 +45,7 @@ pub trait Client<R: Into<Rating> + Display>: From<ClientBuilder<R, Self>> {
     }
 }
 
-impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
+impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
     fn ensure_valid(&self, validates: ValidationType) {
         if let Err(e) = T::validate(validates) {
             panic!("{}", e)
@@ -59,7 +59,7 @@ impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
             user: None,
             tags: vec![],
             limit: 100,
-            url: T::URL.to_string(),
+            url: T::URL,
             _marker_r: std::marker::PhantomData,
             _marker_t: std::marker::PhantomData,
         }
@@ -114,8 +114,8 @@ impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
     }
 
     /// Change the default url for the client
-    pub fn default_url(mut self, url: &str) -> Self {
-        self.url = url.into();
+    pub fn default_url(mut self, url: &'a str) -> Self {
+        self.url = url;
         self
     }
 
@@ -125,7 +125,7 @@ impl<R: Into<Rating> + Display, T: Client<R>> ClientBuilder<R, T> {
     }
 }
 
-impl<R: Into<Rating> + Display, T: Client<R>> Default for ClientBuilder<R, T> {
+impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Default for ClientBuilder<'a, R, T> {
     fn default() -> Self {
         Self::new()
     }

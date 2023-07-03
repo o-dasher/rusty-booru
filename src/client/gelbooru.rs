@@ -6,10 +6,10 @@ use crate::model::gelbooru::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]
-pub struct GelbooruClient(ClientBuilder<GelbooruRating, Self>);
+pub struct GelbooruClient<'a>(ClientBuilder<'a, GelbooruRating, Self>);
 
 #[async_trait]
-impl Client<GelbooruRating> for GelbooruClient {
+impl <'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
     type Post = GelbooruPost;
 
     const URL: &'static str = "https://gelbooru.com";
@@ -18,7 +18,7 @@ impl Client<GelbooruRating> for GelbooruClient {
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<GelbooruPost, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url.as_str();
+        let url = builder.url;
         let response = builder
             .client
             .get(format!("{url}/index.php"))
@@ -40,7 +40,7 @@ impl Client<GelbooruRating> for GelbooruClient {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url.as_str();
+        let url = builder.url;
         let tag_string = builder.tags.join(" ");
         let response = builder
             .client

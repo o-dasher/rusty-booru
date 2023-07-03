@@ -5,10 +5,10 @@ use super::{Client, ClientBuilder};
 use crate::{model::safebooru::SafebooruPost, safebooru::SafebooruRating};
 
 #[derive(From)]
-pub struct SafebooruClient(ClientBuilder<SafebooruRating, Self>);
+pub struct SafebooruClient<'a>(ClientBuilder<'a, SafebooruRating, Self>);
 
 #[async_trait]
-impl Client<SafebooruRating> for SafebooruClient {
+impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
     type Post = SafebooruPost;
 
     const URL: &'static str = "https://safebooru.org";
@@ -16,7 +16,7 @@ impl Client<SafebooruRating> for SafebooruClient {
 
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url.as_str();
+        let url = builder.url;
         let response = builder
             .client
             .get(format!("{url}/index.php"))
@@ -41,7 +41,7 @@ impl Client<SafebooruRating> for SafebooruClient {
 
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url.as_str();
+        let url = builder.url;
         let tags = builder.tags.join(" ");
         Ok(builder
             .client
