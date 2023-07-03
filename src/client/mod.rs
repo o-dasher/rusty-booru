@@ -1,4 +1,4 @@
-use std::any::{Any, TypeId};
+use std::{any::{Any, TypeId}, fmt::Display};
 
 use async_trait::async_trait;
 
@@ -130,8 +130,8 @@ impl<T: Client + Any> ClientBuilder<T> {
     }
 
     /// Blacklist a tag from the query
-    pub fn blacklist_tag<S: Into<String>>(mut self, tag: S) -> Self {
-        self.tags.push(format!("-{}", tag.into()));
+    pub fn blacklist_tag<S: Display>(mut self, tag: S) -> Self {
+        self.tags.push(format!("-{}", tag));
         self
     }
 

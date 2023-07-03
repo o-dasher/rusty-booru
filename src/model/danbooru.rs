@@ -1,7 +1,7 @@
 //! Models for Danbooru
-use core::fmt;
-
+use derive_more::From;
 use serde::{Deserialize, Serialize};
+use strum::Display;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DanbooruPost {
@@ -51,8 +51,9 @@ pub struct DanbooruPost {
 }
 
 /// Post's rating. Check the [Danbooru's ratings wiki](https://danbooru.donmai.us/wiki_pages/howto:rate)
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Display, From)]
 #[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum DanbooruRating {
     #[serde(rename = "e")]
     Explicit,
@@ -62,17 +63,4 @@ pub enum DanbooruRating {
     Sensitive,
     #[serde(rename = "g")]
     General,
-}
-
-impl From<DanbooruRating> for String {
-    fn from(rating: DanbooruRating) -> String {
-        rating.to_string()
-    }
-}
-
-impl fmt::Display for DanbooruRating {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let lowercase_tag = format!("{:?}", self).to_lowercase();
-        write!(f, "{lowercase_tag}")
-    }
 }

@@ -1,7 +1,7 @@
 //! Models for Gelbooru
-use core::fmt;
-
+use derive_more::From;
 use serde::{Deserialize, Serialize};
+use strum::Display;
 
 /// Individual post from [`GelbooruResponse`]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -38,7 +38,8 @@ pub struct GelbooruResponse {
 }
 
 /// Post's rating. Check the [Gelbooru's ratings wiki](https://gelbooru.com/index.php?page=help&topic=rating)
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Display, From)]
+#[strum(serialize_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
 pub enum GelbooruRating {
     Explicit,
@@ -46,17 +47,4 @@ pub enum GelbooruRating {
     Safe,
     Sensitive,
     General,
-}
-
-impl From<GelbooruRating> for String {
-    fn from(rating: GelbooruRating) -> String {
-        rating.to_string()
-    }
-}
-
-impl fmt::Display for GelbooruRating {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let lovercase_tag = format!("{:?}", self).to_lowercase();
-        write!(f, "{lovercase_tag}")
-    }
 }

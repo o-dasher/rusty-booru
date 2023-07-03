@@ -1,9 +1,9 @@
 use derive_more::From;
+use strum::Display;
 
 use crate::model::{
     danbooru::DanbooruRating, gelbooru::GelbooruRating, safebooru::SafebooruRating,
 };
-use std::fmt;
 
 #[derive(From)]
 pub enum Rating {
@@ -12,7 +12,8 @@ pub enum Rating {
     Safebooru(SafebooruRating),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Display)]
+#[strum(serialize_all = "lowercase")]
 pub enum Sort {
     Id,
     Score,
@@ -22,11 +23,4 @@ pub enum Sort {
     Width,
     Source,
     Updated,
-}
-
-impl fmt::Display for Sort {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let lowercase_tag = format!("{:?}", self).to_lowercase();
-        write!(f, "{lowercase_tag}")
-    }
 }

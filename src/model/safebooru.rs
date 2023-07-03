@@ -1,5 +1,6 @@
-use core::fmt;
+use derive_more::From;
 use serde::Deserialize;
+use strum::Display;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SafebooruPost {
@@ -18,8 +19,9 @@ pub struct SafebooruPost {
     pub rating: SafebooruRating,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Display, From)]
 #[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum SafebooruRating {
     Safe,
     General,
@@ -27,17 +29,4 @@ pub enum SafebooruRating {
     // about them if you're querying for deleted content.
     Questionable,
     Explicit,
-}
-
-impl From<SafebooruRating> for String {
-    fn from(rating: SafebooruRating) -> String {
-        rating.to_string()
-    }
-}
-
-impl fmt::Display for SafebooruRating {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let tag = format!("{:?}", self).to_lowercase();
-        write!(f, "{tag}")
-    }
 }
