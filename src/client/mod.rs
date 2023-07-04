@@ -18,8 +18,6 @@ pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
     tags: Tags<'a, R, T>,
     limit: u32,
     url: &'a str,
-    _marker_t: std::marker::PhantomData<T>,
-    _marker_r: std::marker::PhantomData<R>,
 }
 
 pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: Client<'a, R>> {
@@ -27,10 +25,7 @@ pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: Client<'a, R>> {
 }
 
 #[async_trait]
-pub trait Client<'a, R: Into<Rating> + Display>: From<ClientBuilder<'a, R, Self>>
-where
-    Self: 'a,
-{
+pub trait Client<'a, R: Into<Rating> + Display>: From<ClientBuilder<'a, R, Self>> + 'a {
     type Post;
 
     const URL: &'static str;
@@ -63,8 +58,6 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
             tags: Tags(vec![]),
             limit: 100,
             url: T::URL,
-            _marker_r: std::marker::PhantomData,
-            _marker_t: std::marker::PhantomData,
         }
     }
 
