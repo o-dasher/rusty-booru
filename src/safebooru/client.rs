@@ -6,9 +6,9 @@ use crate::shared::client::{Client, ClientBuilder, ClientInformation};
 use super::model::{SafebooruPost, SafebooruRating};
 
 #[derive(From)]
-pub struct SafebooruClient<'a>(ClientBuilder<'a, Self>);
+pub struct SafebooruClient(ClientBuilder<Self>);
 
-impl<'a> ClientInformation for SafebooruClient<'a> {
+impl ClientInformation for SafebooruClient {
     const URL: &'static str = "https://safebooru.org";
     const SORT: &'static str = "sort:";
 
@@ -17,10 +17,10 @@ impl<'a> ClientInformation for SafebooruClient<'a> {
 }
 
 #[async_trait]
-impl<'a> Client<'a> for SafebooruClient<'a> {
+impl Client for SafebooruClient {
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client
@@ -44,7 +44,7 @@ impl<'a> Client<'a> for SafebooruClient<'a> {
 
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client

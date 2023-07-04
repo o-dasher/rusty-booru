@@ -6,13 +6,13 @@ use async_trait::async_trait;
 
 use super::model::{Rating, Sort, Tag, Tags};
 
-pub struct ClientBuilder<'a, T: ClientInformation> {
+pub struct ClientBuilder<T: ClientInformation> {
     pub client: reqwest::Client,
     pub key: Option<String>,
     pub user: Option<String>,
     pub tags: Tags<T>,
     pub limit: u32,
-    pub url: &'a str,
+    pub url: String,
 }
 
 pub enum ValidationType<'a, T: ClientInformation> {
@@ -28,8 +28,8 @@ pub trait ClientInformation {
 }
 
 #[async_trait]
-pub trait Client<'a>: From<ClientBuilder<'a, Self>> + ClientInformation + 'a {
-    fn builder() -> ClientBuilder<'a, Self> {
+pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
+    fn builder() -> ClientBuilder<Self> {
         ClientBuilder::new()
     }
 
@@ -41,7 +41,7 @@ pub trait Client<'a>: From<ClientBuilder<'a, Self>> + ClientInformation + 'a {
     }
 }
 
-impl<'a, T: Client<'a> + ClientInformation> ClientBuilder<'a, T> {
+impl<T: Client + ClientInformation> ClientBuilder<T> {
     fn ensure_valid(&self, validates: ValidationType<'_, T>) {
         if let Err(e) = T::validate(validates) {
             panic!("{}", e)
@@ -55,7 +55,7 @@ impl<'a, T: Client<'a> + ClientInformation> ClientBuilder<'a, T> {
             user: None,
             tags: Tags(vec![]),
             limit: 100,
-            url: T::URL,
+            url: T::URL.to_string(),
         }
     }
 
@@ -105,8 +105,8 @@ impl<'a, T: Client<'a> + ClientInformation> ClientBuilder<'a, T> {
     }
 
     /// Change the default url for the client
-    pub fn default_url(mut self, url: &'a str) -> Self {
-        self.url = url;
+    pub fn default_url(mut self, url: &str) -> Self {
+        self.url = url.to_string();
         self
     }
 
@@ -116,7 +116,7 @@ impl<'a, T: Client<'a> + ClientInformation> ClientBuilder<'a, T> {
     }
 }
 
-impl<'a, T: Client<'a> + ClientInformation> Default for ClientBuilder<'a, T> {
+impl<T: Client + ClientInformation> Default for ClientBuilder<T> {
     fn default() -> Self {
         Self::new()
     }

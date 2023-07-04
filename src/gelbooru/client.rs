@@ -7,9 +7,9 @@ use super::model::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]
-pub struct GelbooruClient<'a>(ClientBuilder<'a, Self>);
+pub struct GelbooruClient(ClientBuilder<Self>);
 
-impl<'a> ClientInformation for GelbooruClient<'a> {
+impl<'a> ClientInformation for GelbooruClient {
     const URL: &'static str = "https://gelbooru.com";
     const SORT: &'static str = "sort:";
 
@@ -18,11 +18,11 @@ impl<'a> ClientInformation for GelbooruClient<'a> {
 }
 
 #[async_trait]
-impl<'a> Client<'a> for GelbooruClient<'a> {
+impl Client for GelbooruClient {
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<GelbooruPost, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client
@@ -45,7 +45,7 @@ impl<'a> Client<'a> for GelbooruClient<'a> {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client

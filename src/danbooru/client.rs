@@ -20,9 +20,9 @@ pub fn get_headers() -> HeaderMap {
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
 #[derive(From)]
-pub struct DanbooruClient<'a>(ClientBuilder<'a, Self>);
+pub struct DanbooruClient(ClientBuilder<Self>);
 
-impl<'a> ClientInformation for DanbooruClient<'a> {
+impl<'a> ClientInformation for DanbooruClient {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
 
@@ -31,7 +31,7 @@ impl<'a> ClientInformation for DanbooruClient<'a> {
 }
 
 #[async_trait]
-impl<'a> Client<'a> for DanbooruClient<'a> {
+impl Client for DanbooruClient {
     fn validate(validates: ValidationType<'_, Self>) -> Result<()> {
         match validates {
             ValidationType::Tags(tags) => {
@@ -48,7 +48,7 @@ impl<'a> Client<'a> for DanbooruClient<'a> {
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client
@@ -65,7 +65,7 @@ impl<'a> Client<'a> for DanbooruClient<'a> {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = builder.url;
+        let url = &builder.url;
 
         let response = builder
             .client
