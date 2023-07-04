@@ -22,12 +22,14 @@ pub fn get_headers() -> HeaderMap {
 #[derive(From)]
 pub struct DanbooruClient<'a>(ClientBuilder<'a, DanbooruRating, Self>);
 
+impl<'a> ClientInformation for DanbooruClient<'a> {
+    const URL: &'static str = "https://danbooru.donmai.us";
+    const SORT: &'static str = "order:";
+}
+
 #[async_trait]
 impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
     type Post = DanbooruPost;
-
-    const URL: &'static str = "https://danbooru.donmai.us";
-    const SORT: &'static str = "order:";
 
     fn validate(validates: ValidationType<'a, '_, DanbooruRating, Self>) -> Result<()> {
         match validates {

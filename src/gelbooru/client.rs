@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{Client, ClientBuilder};
+use crate::shared::client::{Client, ClientBuilder, ClientInformation};
 
 use super::model::*;
 
@@ -9,12 +9,16 @@ use super::model::*;
 #[derive(From)]
 pub struct GelbooruClient<'a>(ClientBuilder<'a, GelbooruRating, Self>);
 
+impl<'a> ClientInformation for GelbooruClient<'a> {
+
+    const URL: &'static str = "https://gelbooru.com";
+    const SORT: &'static str = "sort:";
+}
+
 #[async_trait]
 impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
     type Post = GelbooruPost;
 
-    const URL: &'static str = "https://gelbooru.com";
-    const SORT: &'static str = "sort:";
 
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<GelbooruPost, reqwest::Error> {

@@ -10,7 +10,7 @@ use crate::{
     safebooru::model::SafebooruRating,
 };
 
-use super::client::Client;
+use super::client::ClientInformation;
 
 #[derive(From, Display)]
 pub enum Rating {
@@ -34,7 +34,7 @@ pub enum Sort {
 }
 
 #[derive(is_enum_variant)]
-pub enum Tag<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
+pub enum Tag<'a, R: Into<Rating> + Display, T: ClientInformation> {
     Plain(String),
     Blacklist(String),
     Rating(R),
@@ -43,7 +43,7 @@ pub enum Tag<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
     _Marker(Infallible, &'a PhantomData<T>),
 }
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Display for Tag<'a, R, T> {
+impl<'a, R: Into<Rating> + Display, T: ClientInformation> Display for Tag<'a, R, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Tag::Plain(tag) => write!(f, "{}", tag),
@@ -54,9 +54,9 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Display for Tag<'a, R, T> 
     }
 }
 
-pub struct Tags<'a, R: Into<Rating> + Display, T: Client<'a, R>>(pub Vec<Tag<'a, R, T>>);
+pub struct Tags<'a, R: Into<Rating> + Display, T: ClientInformation>(pub Vec<Tag<'a, R, T>>);
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Tags<'a, R, T> {
+impl<'a, R: Into<Rating> + Display, T: ClientInformation> Tags<'a, R, T> {
     pub fn unpack(&self) -> String {
         self.0
             .iter()

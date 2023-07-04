@@ -1,6 +1,7 @@
 //! ### Usage
 //! ```
-//! use booru_rs::{danbooru::{DanbooruClient, DanbooruRating}, Sort, Client};
+//! use booru_rs::{danbooru::{client::DanbooruClient, model::DanbooruRating}};
+//! use booru_rs::shared::{client::Client, generic::Sort}
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -26,3 +27,4 @@ pub mod danbooru;
 pub mod gelbooru;
 pub mod safebooru;
 pub mod shared;
+

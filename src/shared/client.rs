@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 use super::generic::{Rating, Sort, Tag, Tags};
 
-pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
+pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: ClientInformation> {
     pub client: reqwest::Client,
     pub key: Option<String>,
     pub user: Option<String>,
@@ -15,16 +15,20 @@ pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
     pub url: &'a str,
 }
 
-pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: Client<'a, R>> {
+pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: ClientInformation> {
     Tags(&'b Tags<'a, R, T>),
 }
 
-#[async_trait]
-pub trait Client<'a, R: Into<Rating> + Display>: From<ClientBuilder<'a, R, Self>> + 'a {
-    type Post;
-
+pub trait ClientInformation {
     const URL: &'static str;
     const SORT: &'static str;
+}
+
+#[async_trait]
+pub trait Client<'a, R: Into<Rating> + Display>:
+    From<ClientBuilder<'a, R, Self>> + ClientInformation + 'a
+{
+    type Post;
 
     fn builder() -> ClientBuilder<'a, R, Self> {
         ClientBuilder::new()
@@ -38,7 +42,7 @@ pub trait Client<'a, R: Into<Rating> + Display>: From<ClientBuilder<'a, R, Self>
     }
 }
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
+impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> ClientBuilder<'a, R, T> {
     fn ensure_valid(&self, validates: ValidationType<'a, '_, R, T>) {
         if let Err(e) = T::validate(validates) {
             panic!("{}", e)
@@ -113,7 +117,9 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
     }
 }
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Default for ClientBuilder<'a, R, T> {
+impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> Default
+    for ClientBuilder<'a, R, T>
+{
     fn default() -> Self {
         Self::new()
     }
