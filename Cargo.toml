@@ -22,3 +22,5 @@ async-trait = "0.1.59"
 derive_more = "0.99.17"
 strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 anyhow = "1.0.71"
+itertools = "0.11.0"
+derive_is_enum_variant = "0.1.1"

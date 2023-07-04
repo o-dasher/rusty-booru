@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use derive_more::From;
+use itertools::Itertools;
 
 use super::{Client, ClientBuilder};
 use crate::{model::safebooru::SafebooruPost, safebooru::SafebooruRating};
@@ -40,7 +41,7 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
-        let tags = builder.tags.join(" ");
+        let tags = builder.tags.iter().map(ToString::to_string).collect_vec().join(" ");
         Ok(builder
             .client
             .get(format!("{url}/index.php"))

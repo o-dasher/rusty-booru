@@ -20,6 +20,8 @@
 //! }
 //! ```
 
+#![feature(exhaustive_patterns)]
+
 pub mod client;
 pub mod model;
 

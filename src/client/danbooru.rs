@@ -4,6 +4,7 @@ use anyhow::{ensure, Result};
 use derive_more::From;
 
 use async_trait::async_trait;
+use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
@@ -27,10 +28,13 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
 
-    fn validate(validates: ValidationType) -> Result<()> {
+    fn validate(validates: ValidationType<'a, '_, DanbooruRating, Self>) -> Result<()> {
         match validates {
             ValidationType::Tags(tags) => {
-                ensure!(tags.len() <= 1, "Danbooru only allows two tags per query");
+                ensure!(
+                    tags.iter().filter(|t| t.is_plain()).collect_vec().len() <= 1,
+                    "Danbooru only allows two tags per query"
+                );
             }
         }
 
@@ -56,7 +60,12 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let tag_string = builder.tags.join(" ");
+        let tag_string = builder
+            .tags
+            .iter()
+            .map(ToString::to_string)
+            .collect_vec()
+            .join(" ");
         let url = builder.url;
         let response = builder
             .client
