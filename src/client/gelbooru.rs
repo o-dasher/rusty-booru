@@ -27,7 +27,7 @@ impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
-                ("id", id.to_string().as_str()),
+                ("id", &id.to_string()),
                 ("json", "1"),
             ])
             .send()
