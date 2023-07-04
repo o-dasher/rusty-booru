@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use super::{Client, ClientBuilder};
-use crate::model::gelbooru::*;
+use crate::shared::client::{Client, ClientBuilder};
+
+use super::model::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]

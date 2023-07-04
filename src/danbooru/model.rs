@@ -1,4 +1,5 @@
 //! Models for Danbooru
+
 use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;

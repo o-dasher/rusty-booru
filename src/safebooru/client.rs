@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use super::{Client, ClientBuilder};
-use crate::{model::safebooru::SafebooruPost, safebooru::SafebooruRating};
+use crate::shared::client::{ClientBuilder, Client};
+
+use super::model::{SafebooruRating, SafebooruPost};
 
 #[derive(From)]
 pub struct SafebooruClient<'a>(ClientBuilder<'a, SafebooruRating, Self>);
@@ -13,7 +14,6 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
 
     const URL: &'static str = "https://safebooru.org";
     const SORT: &'static str = "sort:";
-
 
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;

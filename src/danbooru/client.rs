@@ -1,11 +1,12 @@
-use super::{Client, ClientBuilder, ValidationType};
-use crate::model::danbooru::*;
 use anyhow::{ensure, Result};
 use derive_more::From;
 
 use async_trait::async_trait;
 use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
+
+use super::model::*;
+use crate::shared::client::*;
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
 pub fn get_headers() -> HeaderMap {

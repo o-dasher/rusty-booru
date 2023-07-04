@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod safebooru {
     use booru_rs::{
-        client::{generic::Sort, safebooru::SafebooruClient, Client},
-        model::safebooru::SafebooruRating,
+        safebooru::{client::SafebooruClient, model::SafebooruRating},
+        shared::{client::Client, generic::Sort},
     };
 
     #[tokio::test]

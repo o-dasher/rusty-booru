@@ -4,20 +4,15 @@ use anyhow::Result;
 
 use async_trait::async_trait;
 
-use self::generic::{Rating, Sort, Tag, Tags};
-
-pub mod danbooru;
-pub mod gelbooru;
-pub mod generic;
-pub mod safebooru;
+use super::generic::{Rating, Sort, Tag, Tags};
 
 pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
-    client: reqwest::Client,
-    key: Option<String>,
-    user: Option<String>,
-    tags: Tags<'a, R, T>,
-    limit: u32,
-    url: &'a str,
+    pub client: reqwest::Client,
+    pub key: Option<String>,
+    pub user: Option<String>,
+    pub tags: Tags<'a, R, T>,
+    pub limit: u32,
+    pub url: &'a str,
 }
 
 pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: Client<'a, R>> {

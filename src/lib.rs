@@ -22,23 +22,7 @@
 
 #![feature(exhaustive_patterns)]
 
-pub mod client;
-pub mod model;
-
-// Conveience
-pub use client::{generic::Sort, Client};
-
-pub mod safebooru {
-    pub use crate::client::safebooru::*;
-    pub use crate::model::safebooru::*;
-}
-
-pub mod gelbooru {
-    pub use crate::client::gelbooru::*;
-    pub use crate::model::gelbooru::*;
-}
-
-pub mod danbooru {
-    pub use crate::client::danbooru::*;
-    pub use crate::model::danbooru::*;
-}
+pub mod danbooru;
+pub mod gelbooru;
+pub mod safebooru;
+pub mod shared;

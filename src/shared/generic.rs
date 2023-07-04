@@ -6,9 +6,11 @@ use itertools::Itertools;
 use strum::Display;
 
 use crate::{
-    model::{danbooru::DanbooruRating, gelbooru::GelbooruRating, safebooru::SafebooruRating},
-    Client,
+    danbooru::model::DanbooruRating, gelbooru::model::GelbooruRating,
+    safebooru::model::SafebooruRating,
 };
+
+use super::client::Client;
 
 #[derive(From, Display)]
 pub enum Rating {

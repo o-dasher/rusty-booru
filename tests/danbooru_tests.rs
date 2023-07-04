@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod danbooru {
     use booru_rs::{
-        client::{danbooru::DanbooruClient, generic::Sort, Client},
-        model::danbooru::DanbooruRating,
+        danbooru::{client::DanbooruClient, model::DanbooruRating},
+        shared::{client::Client, generic::Sort},
     };
 
     #[tokio::test]
