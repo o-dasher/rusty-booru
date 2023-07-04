@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use derive_more::From;
-use itertools::Itertools;
 
 use super::{Client, ClientBuilder};
 use crate::model::gelbooru::*;
@@ -20,6 +19,7 @@ impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
     async fn get_by_id(&self, id: u32) -> Result<GelbooruPost, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
+
         let response = builder
             .client
             .get(format!("{url}/index.php"))
@@ -42,12 +42,7 @@ impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
     async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
-        let tag_string = builder
-            .tags
-            .iter()
-            .map(ToString::to_string)
-            .collect_vec()
-            .join(" ");
+
         let response = builder
             .client
             .get(format!("{url}/index.php"))
@@ -56,7 +51,7 @@ impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
                 ("s", "post"),
                 ("q", "index"),
                 ("limit", builder.limit.to_string().as_str()),
-                ("tags", &tag_string),
+                ("tags", &builder.tags.unpack()),
                 ("json", "1"),
             ])
             .send()

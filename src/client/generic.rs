@@ -2,6 +2,7 @@ use std::{convert::Infallible, fmt::Display, marker::PhantomData};
 
 use derive_is_enum_variant::is_enum_variant;
 use derive_more::From;
+use itertools::Itertools;
 use strum::Display;
 
 use crate::{
@@ -48,5 +49,17 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Display for Tag<'a, R, T> 
             Tag::Rating(tag) => write!(f, "rating:{}", tag),
             Tag::Sort(by) => write!(f, "{}:{}", T::SORT, by),
         }
+    }
+}
+
+pub struct Tags<'a, R: Into<Rating> + Display, T: Client<'a, R>>(pub Vec<Tag<'a, R, T>>);
+
+impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Tags<'a, R, T> {
+    pub fn unpack(&self) -> String {
+        self.0
+            .iter()
+            .map(ToString::to_string)
+            .collect_vec()
+            .join(" ")
     }
 }

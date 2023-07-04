@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use derive_more::From;
-use itertools::Itertools;
 
 use super::{Client, ClientBuilder};
 use crate::{model::safebooru::SafebooruPost, safebooru::SafebooruRating};
@@ -15,9 +14,11 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
     const URL: &'static str = "https://safebooru.org";
     const SORT: &'static str = "sort:";
 
+
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
+
         let response = builder
             .client
             .get(format!("{url}/index.php"))
@@ -41,8 +42,8 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
-        let tags = builder.tags.iter().map(ToString::to_string).collect_vec().join(" ");
-        Ok(builder
+
+        let response = builder
             .client
             .get(format!("{url}/index.php"))
             .query(&[
@@ -50,12 +51,14 @@ impl<'a> Client<'a, SafebooruRating> for SafebooruClient<'a> {
                 ("s", "post"),
                 ("q", "index"),
                 ("limit", builder.limit.to_string().as_str()),
-                ("tags", &tags),
+                ("tags", &builder.tags.unpack()),
                 ("json", "1"),
             ])
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
-            .await?)
+            .await?;
+
+        Ok(response)
     }
 }

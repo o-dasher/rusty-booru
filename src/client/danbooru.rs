@@ -32,7 +32,7 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
         match validates {
             ValidationType::Tags(tags) => {
                 ensure!(
-                    tags.iter().filter(|t| t.is_plain()).collect_vec().len() <= 1,
+                    tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() <= 1,
                     "Danbooru only allows two tags per query"
                 );
             }
@@ -45,6 +45,7 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
         let builder = &self.0;
         let url = builder.url;
+
         let response = builder
             .client
             .get(format!("{url}/posts/{id}.json"))
@@ -60,20 +61,15 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let tag_string = builder
-            .tags
-            .iter()
-            .map(ToString::to_string)
-            .collect_vec()
-            .join(" ");
         let url = builder.url;
+
         let response = builder
             .client
             .get(format!("{url}/posts.json"))
             .headers(get_headers())
             .query(&[
                 ("limit", builder.limit.to_string().as_str()),
-                ("tags", &tag_string),
+                ("tags", &builder.tags.unpack()),
             ])
             .send()
             .await?

@@ -1,43 +1,21 @@
-use std::{convert::Infallible, fmt::Display, marker::PhantomData};
+use std::fmt::Display;
 
 use anyhow::Result;
 
 use async_trait::async_trait;
-use derive_is_enum_variant::is_enum_variant;
 
-use self::generic::{Rating, Sort};
+use self::generic::{Rating, Sort, Tag, Tags};
 
 pub mod danbooru;
 pub mod gelbooru;
 pub mod generic;
 pub mod safebooru;
 
-#[derive(is_enum_variant)]
-pub enum Tag<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
-    Plain(String),
-    Blacklist(String),
-    Rating(R),
-    Sort(Sort),
-    #[is_enum_variant(skip)]
-    _Marker(Infallible, &'a PhantomData<T>),
-}
-
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> Display for Tag<'a, R, T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Tag::Plain(tag) => write!(f, "{}", tag),
-            Tag::Blacklist(tag) => write!(f, "-{}", tag),
-            Tag::Rating(tag) => write!(f, "rating:{}", tag),
-            Tag::Sort(by) => write!(f, "{}:{}", T::SORT, by),
-        }
-    }
-}
-
 pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
     client: reqwest::Client,
     key: Option<String>,
     user: Option<String>,
-    tags: Vec<Tag<'a, R, T>>,
+    tags: Tags<'a, R, T>,
     limit: u32,
     url: &'a str,
     _marker_t: std::marker::PhantomData<T>,
@@ -45,7 +23,7 @@ pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: Client<'a, R>> {
 }
 
 pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: Client<'a, R>> {
-    Tags(&'b Vec<Tag<'a, R, T>>),
+    Tags(&'b Tags<'a, R, T>),
 }
 
 #[async_trait]
@@ -82,7 +60,7 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
             client: reqwest::Client::new(),
             key: None,
             user: None,
-            tags: vec![],
+            tags: Tags(vec![]),
             limit: 100,
             url: T::URL,
             _marker_r: std::marker::PhantomData,
@@ -104,7 +82,7 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R>> ClientBuilder<'a, R, T> {
             self.ensure_valid(ValidationType::Tags(&self.tags))
         }
 
-        self.tags.push(tag);
+        self.tags.0.push(tag);
 
         self
     }
