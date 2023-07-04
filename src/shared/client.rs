@@ -23,7 +23,7 @@ pub trait ClientInformation {
     const URL: &'static str;
     const SORT: &'static str;
 
-    type Rating: Into<Rating> + Display;
+    type Rating: From<Rating> + Display;
     type Post;
 }
 
