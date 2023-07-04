@@ -68,7 +68,7 @@ impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
             .get(format!("{url}/posts.json"))
             .headers(get_headers())
             .query(&[
-                ("limit", builder.limit.to_string().as_str()),
+                ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
             ])
             .send()

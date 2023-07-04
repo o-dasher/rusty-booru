@@ -50,7 +50,7 @@ impl<'a> Client<'a, GelbooruRating> for GelbooruClient<'a> {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
-                ("limit", builder.limit.to_string().as_str()),
+                ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
                 ("json", "1"),
             ])
