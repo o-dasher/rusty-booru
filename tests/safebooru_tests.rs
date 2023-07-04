@@ -2,7 +2,7 @@
 mod safebooru {
     use booru_rs::{
         safebooru::{client::SafebooruClient, model::SafebooruRating},
-        shared::{client::Client, generic::Sort},
+        shared::{client::Client, model::Sort},
     };
 
     #[tokio::test]

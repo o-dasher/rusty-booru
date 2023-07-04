@@ -8,7 +8,7 @@ use super::model::{SafebooruPost, SafebooruRating};
 #[derive(From)]
 pub struct SafebooruClient<'a>(ClientBuilder<'a, SafebooruRating, Self>);
 
-impl <'a> ClientInformation for SafebooruClient<'a> {
+impl<'a> ClientInformation for SafebooruClient<'a> {
     const URL: &'static str = "https://safebooru.org";
     const SORT: &'static str = "sort:";
 }

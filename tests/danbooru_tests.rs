@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod danbooru {
-    use booru_rs::{danbooru::{client::DanbooruClient, model::DanbooruRating}, shared::{client::Client, generic::Sort}};
+    use booru_rs::{
+        danbooru::{client::DanbooruClient, model::DanbooruRating},
+        shared::{client::Client, model::Sort},
+    };
 
     #[tokio::test]
     async fn get_posts_with_tag() {

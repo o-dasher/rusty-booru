@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use async_trait::async_trait;
 
-use super::generic::{Rating, Sort, Tag, Tags};
+use super::model::{Rating, Sort, Tag, Tags};
 
 pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: ClientInformation> {
     pub client: reqwest::Client,
