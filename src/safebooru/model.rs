@@ -3,6 +3,8 @@ use derive_more::From;
 use serde::Deserialize;
 use strum::Display;
 
+use crate::shared::model::Rating;
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct SafebooruPost {
     pub id: u32,
@@ -30,4 +32,16 @@ pub enum SafebooruRating {
     // about them if you're querying for deleted content.
     Questionable,
     Explicit,
+}
+
+impl From<Rating> for SafebooruRating {
+    fn from(value: Rating) -> Self {
+        match value {
+            Rating::Explicit =>SafebooruRating::Explicit,
+            Rating::Questionable => SafebooruRating::Questionable,
+            Rating::Safe => SafebooruRating::Safe,
+            Rating::Sensitive => SafebooruRating::Questionable,
+            Rating::General => SafebooruRating::General,
+        }
+    }
 }

@@ -3,6 +3,8 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
+use crate::shared::model::Rating;
+
 /// Individual post from [`GelbooruResponse`]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GelbooruPost {
@@ -47,4 +49,16 @@ pub enum GelbooruRating {
     Safe,
     Sensitive,
     General,
+}
+
+impl From<Rating> for GelbooruRating {
+    fn from(value: Rating) -> Self {
+        match value {
+            Rating::Explicit => Self::Explicit,
+            Rating::Questionable => Self::Questionable,
+            Rating::Safe => Self::Safe,
+            Rating::Sensitive => Self::Sensitive,
+            Rating::General => Self::General,
+        }
+    }
 }

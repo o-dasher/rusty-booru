@@ -4,6 +4,8 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
+use crate::shared::model::Rating;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DanbooruPost {
     pub id: u32,
@@ -65,3 +67,16 @@ pub enum DanbooruRating {
     #[serde(rename = "g")]
     General,
 }
+
+impl From<Rating> for DanbooruRating {
+    fn from(value: Rating) -> Self {
+        match value {
+            Rating::Explicit => Self::Explicit,
+            Rating::Questionable => Self::Questionable,
+            Rating::Safe => Self::General,
+            Rating::Sensitive => Self::Sensitive,
+            Rating::General => Self::General,
+        }
+    }
+}
+

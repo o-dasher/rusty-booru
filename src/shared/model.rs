@@ -1,22 +1,17 @@
 use std::fmt::Display;
 
 use derive_is_enum_variant::is_enum_variant;
-use derive_more::From;
 use itertools::Itertools;
 use strum::Display;
 
-use crate::{
-    danbooru::model::DanbooruRating, gelbooru::model::GelbooruRating,
-    safebooru::model::SafebooruRating,
-};
-
 use super::client::ClientInformation;
 
-#[derive(From, Display)]
 pub enum Rating {
-    Danbooru(DanbooruRating),
-    Gelbooru(GelbooruRating),
-    Safebooru(SafebooruRating),
+    Explicit,
+    Questionable,
+    Safe,
+    Sensitive,
+    General,
 }
 
 #[derive(Debug, Clone, Display)]
