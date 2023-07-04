@@ -6,44 +6,43 @@ use async_trait::async_trait;
 
 use super::model::{Rating, Sort, Tag, Tags};
 
-pub struct ClientBuilder<'a, R: Into<Rating> + Display, T: ClientInformation> {
+pub struct ClientBuilder<'a, T: ClientInformation> {
     pub client: reqwest::Client,
     pub key: Option<String>,
     pub user: Option<String>,
-    pub tags: Tags<'a, R, T>,
+    pub tags: Tags<T>,
     pub limit: u32,
     pub url: &'a str,
 }
 
-pub enum ValidationType<'a, 'b, R: Into<Rating> + Display, T: ClientInformation> {
-    Tags(&'b Tags<'a, R, T>),
+pub enum ValidationType<'a, T: ClientInformation> {
+    Tags(&'a Tags<T>),
 }
 
 pub trait ClientInformation {
     const URL: &'static str;
     const SORT: &'static str;
+
+    type Rating: Into<Rating> + Display;
+    type Post;
 }
 
 #[async_trait]
-pub trait Client<'a, R: Into<Rating> + Display>:
-    From<ClientBuilder<'a, R, Self>> + ClientInformation + 'a
-{
-    type Post;
-
-    fn builder() -> ClientBuilder<'a, R, Self> {
+pub trait Client<'a>: From<ClientBuilder<'a, Self>> + ClientInformation + 'a {
+    fn builder() -> ClientBuilder<'a, Self> {
         ClientBuilder::new()
     }
 
     async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
 
-    fn validate(_validates: ValidationType<'a, '_, R, Self>) -> Result<()> {
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> ClientBuilder<'a, R, T> {
-    fn ensure_valid(&self, validates: ValidationType<'a, '_, R, T>) {
+impl<'a, T: Client<'a> + ClientInformation> ClientBuilder<'a, T> {
+    fn ensure_valid(&self, validates: ValidationType<'_, T>) {
         if let Err(e) = T::validate(validates) {
             panic!("{}", e)
         }
@@ -67,7 +66,7 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> Client
         self
     }
 
-    pub fn any_tag(mut self, tag: Tag<'a, R, T>) -> Self {
+    pub fn any_tag(mut self, tag: Tag<T>) -> Self {
         // Danbooru has an special case for plain tags.
         // it must have at max 2 plain tags.
         if let Tag::Plain(..) = tag {
@@ -91,7 +90,7 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> Client
         self.sort(Sort::Random)
     }
 
-    pub fn rating(self, rating: R) -> Self {
+    pub fn rating(self, rating: T::Rating) -> Self {
         self.any_tag(Tag::Rating(rating))
     }
 
@@ -117,9 +116,7 @@ impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> Client
     }
 }
 
-impl<'a, R: Into<Rating> + Display, T: Client<'a, R> + ClientInformation> Default
-    for ClientBuilder<'a, R, T>
-{
+impl<'a, T: Client<'a> + ClientInformation> Default for ClientBuilder<'a, T> {
     fn default() -> Self {
         Self::new()
     }

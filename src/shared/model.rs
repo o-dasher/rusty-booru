@@ -1,4 +1,4 @@
-use std::{convert::Infallible, fmt::Display, marker::PhantomData};
+use std::fmt::Display;
 
 use derive_is_enum_variant::is_enum_variant;
 use derive_more::From;
@@ -34,16 +34,14 @@ pub enum Sort {
 }
 
 #[derive(is_enum_variant)]
-pub enum Tag<'a, R: Into<Rating> + Display, T: ClientInformation> {
+pub enum Tag<T: ClientInformation> {
     Plain(String),
     Blacklist(String),
-    Rating(R),
+    Rating(T::Rating),
     Sort(Sort),
-    #[is_enum_variant(skip)]
-    _Marker(Infallible, &'a PhantomData<T>),
 }
 
-impl<'a, R: Into<Rating> + Display, T: ClientInformation> Display for Tag<'a, R, T> {
+impl<T: ClientInformation> Display for Tag<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Tag::Plain(tag) => write!(f, "{}", tag),
@@ -54,9 +52,9 @@ impl<'a, R: Into<Rating> + Display, T: ClientInformation> Display for Tag<'a, R,
     }
 }
 
-pub struct Tags<'a, R: Into<Rating> + Display, T: ClientInformation>(pub Vec<Tag<'a, R, T>>);
+pub struct Tags<T: ClientInformation>(pub Vec<Tag<T>>);
 
-impl<'a, R: Into<Rating> + Display, T: ClientInformation> Tags<'a, R, T> {
+impl<T: ClientInformation> Tags<T> {
     pub fn unpack(&self) -> String {
         self.0
             .iter()

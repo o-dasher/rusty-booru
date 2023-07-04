@@ -20,18 +20,19 @@ pub fn get_headers() -> HeaderMap {
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
 #[derive(From)]
-pub struct DanbooruClient<'a>(ClientBuilder<'a, DanbooruRating, Self>);
+pub struct DanbooruClient<'a>(ClientBuilder<'a, Self>);
 
 impl<'a> ClientInformation for DanbooruClient<'a> {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
+
+    type Rating = DanbooruRating;
+    type Post = DanbooruPost;
 }
 
 #[async_trait]
-impl<'a> Client<'a, DanbooruRating> for DanbooruClient<'a> {
-    type Post = DanbooruPost;
-
-    fn validate(validates: ValidationType<'a, '_, DanbooruRating, Self>) -> Result<()> {
+impl<'a> Client<'a> for DanbooruClient<'a> {
+    fn validate(validates: ValidationType<'_, Self>) -> Result<()> {
         match validates {
             ValidationType::Tags(tags) => {
                 ensure!(
