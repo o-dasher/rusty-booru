@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use super::model::{Rating, Sort, Tag, Tags, ValidationError};
 use async_trait::async_trait;
+use itertools::Itertools;
 
 pub struct ClientBuilder<T: ClientInformation> {
     pub client: reqwest::Client,
@@ -22,30 +23,15 @@ pub trait ClientInformation {
     type Post;
 }
 
-pub type QueryTuple = (&'static str, &'static str);
-pub type QueryVec = Vec<(&'static str, &'static str)>;
+pub type QueryVec = Vec<(String, String)>;
 
-pub enum BaseQuery {
-    GelbooruLike,
+pub enum QueryLike {
+    Gelbooru,
 }
 
-impl BaseQuery {
-    pub fn get(&self) -> QueryVec {
-        match self {
-            BaseQuery::GelbooruLike => vec![
-                ("page", "dapi"),
-                ("s", "post"),
-                ("q", "index"),
-                ("json", "1"),
-            ],
-        }
-    }
-
-    pub fn join<'a>(&self, other: &'a [QueryTuple]) -> QueryVec {
-        let mut v = self.get();
-        v.extend_from_slice(other);
-        v
-    }
+pub enum QueryMode {
+    Single(u32),
+    Multiple,
 }
 
 #[async_trait]
@@ -62,10 +48,48 @@ pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
     }
 }
 
+pub trait WithCommonQuery
+where
+    Self: Client,
+{
+    fn common_query_type() -> QueryLike;
+    fn get_query(&self, builder: &ClientBuilder<Self>, query_mode: QueryMode) -> QueryVec {
+        let query_type = Self::common_query_type();
+
+        let mut base = match query_type {
+            QueryLike::Gelbooru => vec![
+                ("page", "dapi"),
+                ("s", "post"),
+                ("q", "index"),
+                ("json", "1"),
+            ],
+        }
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.to_string()))
+        .collect_vec();
+
+        let extension = match query_type {
+            QueryLike::Gelbooru => match query_mode {
+                QueryMode::Single(id) => vec![("id", id.to_string())],
+                QueryMode::Multiple => vec![
+                    ("limit", builder.limit.to_string()),
+                    ("tags", builder.tags.unpack()),
+                ],
+            },
+        }
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect_vec();
+
+        base.extend(extension);
+        base
+    }
+}
+
 impl<T: Client + ClientInformation> ClientBuilder<T> {
     pub fn new() -> Self {
         Self {
-            client: reqwest::lient::new(),
+            client: reqwest::Client::new(),
             tags: Tags(vec![]),
             limit: 100,
             url: T::URL.to_string(),

@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{BaseQuery, Client, ClientBuilder, ClientInformation};
+use crate::shared::client::{
+    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery,
+};
 
 use super::model::{SafebooruPost, SafebooruRating};
 
@@ -16,6 +18,12 @@ impl ClientInformation for SafebooruClient {
     type Rating = SafebooruRating;
 }
 
+impl WithCommonQuery for SafebooruClient {
+    fn common_query_type() -> QueryLike {
+        QueryLike::Gelbooru
+    }
+}
+
 #[async_trait]
 impl Client for SafebooruClient {
     async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
@@ -24,9 +32,7 @@ impl Client for SafebooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&BaseQuery::GelbooruLike.join(&[
-                ("id", &id.to_string()),
-            ]))
+            .query(&self.get_query(builder, QueryMode::Single(id)))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
@@ -40,10 +46,7 @@ impl Client for SafebooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&BaseQuery::GelbooruLike.join(&[
-                ("limit", &builder.limit.to_string()),
-                ("tags", &builder.tags.unpack()),
-            ]))
+            .query(&self.get_query(builder, QueryMode::Multiple))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()

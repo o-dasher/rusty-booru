@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{BaseQuery, Client, ClientBuilder, ClientInformation, QueryVec};
+use crate::shared::client::{
+    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery,
+};
 
 use super::model::*;
 
@@ -17,6 +19,12 @@ impl ClientInformation for GelbooruClient {
     type Rating = GelbooruRating;
 }
 
+impl WithCommonQuery for GelbooruClient {
+    fn common_query_type() -> crate::shared::client::QueryLike {
+        QueryLike::Gelbooru
+    }
+}
+
 #[async_trait]
 impl Client for GelbooruClient {
     /// Directly get a post by its unique Id
@@ -26,7 +34,7 @@ impl Client for GelbooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&BaseQuery::GelbooruLike.join(&[("id", &id.to_string())]))
+            .query(&self.get_query(builder, QueryMode::Single(id)))
             .send()
             .await?
             .json::<GelbooruResponse>()
@@ -41,10 +49,7 @@ impl Client for GelbooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&BaseQuery::GelbooruLike.join(&[
-                ("limit", &builder.limit.to_string()),
-                ("tags", &builder.tags.unpack()),
-            ]))
+            .query(&self.get_query(builder, QueryMode::Multiple))
             .send()
             .await?
             .json::<GelbooruResponse>()
