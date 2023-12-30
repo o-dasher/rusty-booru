@@ -5,8 +5,6 @@ use async_trait::async_trait;
 
 pub struct ClientBuilder<T: ClientInformation> {
     pub client: reqwest::Client,
-    pub key: Option<String>,
-    pub user: Option<String>,
     pub tags: Tags<T>,
     pub limit: u32,
     pub url: String,
@@ -42,19 +40,10 @@ impl<T: Client + ClientInformation> ClientBuilder<T> {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
-            key: None,
-            user: None,
             tags: Tags(vec![]),
             limit: 100,
             url: T::URL.to_string(),
         }
-    }
-
-    /// Set the API key and User for the requests (optional)
-    pub fn set_credentials(mut self, key: String, user: String) -> Self {
-        self.key = Some(key);
-        self.user = Some(user);
-        self
     }
 
     pub fn any_tag(mut self, tag: Tag<T>) -> Self {
