@@ -67,7 +67,7 @@ impl Client for DanbooruClient {
     fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
         match validates {
             ValidationType::Tags(tags) => {
-                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 1 {
+                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 2 {
                     Err(ValidationError::TooManyTags)?
                 }
             }
