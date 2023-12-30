@@ -21,8 +21,6 @@
 //! }
 //! ```
 
-#![feature(exhaustive_patterns)]
-
 pub mod danbooru;
 pub mod gelbooru;
 pub mod safebooru;

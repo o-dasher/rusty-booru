@@ -33,7 +33,7 @@ pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
         ClientBuilder::new()
     }
 
-    async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error>;
+    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
 
     fn validate(_validates: ValidationType<'_, Self>) -> Result<()> {

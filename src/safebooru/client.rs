@@ -18,13 +18,12 @@ impl ClientInformation for SafebooruClient {
 
 #[async_trait]
 impl Client for SafebooruClient {
-    async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/index.php"))
+            .get(format!("{}/index.php", &builder.url))
             .query(&[
                 ("page", "dapi"),
                 ("s", "post"),
@@ -35,20 +34,16 @@ impl Client for SafebooruClient {
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
-            .await?;
-
-        // FIXME: Assumes there is a post with the given id. Same is true for the
-        // Gelbooru client.
-        Ok(response.into_iter().next().unwrap())
+            .await
+            .map(|r| r.into_iter().next())
     }
 
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/index.php"))
+            .get(format!("{}/index.php", &builder.url))
             .query(&[
                 ("page", "dapi"),
                 ("s", "post"),
@@ -60,8 +55,6 @@ impl Client for SafebooruClient {
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
-            .await?;
-
-        Ok(response)
+            .await
     }
 }

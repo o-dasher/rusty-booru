@@ -46,30 +46,27 @@ impl Client for DanbooruClient {
     }
 
     /// Directly get a post by its unique Id
-    async fn get_by_id(&self, id: u32) -> Result<Self::Post, reqwest::Error> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/posts/{id}.json"))
+            .get(format!("{}/posts/{id}.json", builder.url))
             .headers(get_headers())
             .send()
             .await?
             .json::<DanbooruPost>()
-            .await?;
-
-        Ok(response)
+            .await
+            .map(Some)
     }
 
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/posts.json"))
+            .get(format!("{}/posts.json", builder.url))
             .headers(get_headers())
             .query(&[
                 ("limit", &builder.limit.to_string()),
@@ -78,8 +75,6 @@ impl Client for DanbooruClient {
             .send()
             .await?
             .json::<Vec<DanbooruPost>>()
-            .await?;
-
-        Ok(response)
+            .await
     }
 }

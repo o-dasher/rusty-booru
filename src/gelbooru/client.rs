@@ -1,7 +1,11 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{Client, ClientBuilder, ClientInformation};
+use crate::shared::{
+    self,
+    client::{Client, ClientBuilder, ClientInformation},
+    model,
+};
 
 use super::model::*;
 
@@ -20,13 +24,12 @@ impl<'a> ClientInformation for GelbooruClient {
 #[async_trait]
 impl Client for GelbooruClient {
     /// Directly get a post by its unique Id
-    async fn get_by_id(&self, id: u32) -> Result<GelbooruPost, reqwest::Error> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/index.php"))
+            .get(format!("{}/index.php", &builder.url))
             .query(&[
                 ("page", "dapi"),
                 ("s", "post"),
@@ -37,19 +40,17 @@ impl Client for GelbooruClient {
             .send()
             .await?
             .json::<GelbooruResponse>()
-            .await?;
-
-        Ok(response.posts.into_iter().next().unwrap())
+            .await
+            .map(|r| r.posts.into_iter().next())
     }
 
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
         let builder = &self.0;
-        let url = &builder.url;
 
-        let response = builder
+        builder
             .client
-            .get(format!("{url}/index.php"))
+            .get(format!("{}/index.php", &builder.url))
             .query(&[
                 ("page", "dapi"),
                 ("s", "post"),
@@ -61,8 +62,7 @@ impl Client for GelbooruClient {
             .send()
             .await?
             .json::<GelbooruResponse>()
-            .await?;
-
-        Ok(response.posts)
+            .await
+            .map(|r| r.posts)
     }
 }
