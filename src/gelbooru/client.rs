@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{Client, ClientBuilder, ClientInformation};
+use crate::shared::client::{BaseQuery, Client, ClientBuilder, ClientInformation, QueryVec};
 
 use super::model::*;
 
@@ -26,13 +26,7 @@ impl Client for GelbooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&[
-                ("page", "dapi"),
-                ("s", "post"),
-                ("q", "index"),
-                ("json", "1"),
-                ("id", &id.to_string()),
-            ])
+            .query(&BaseQuery::GelbooruLike.join(&[("id", &id.to_string())]))
             .send()
             .await?
             .json::<GelbooruResponse>()
@@ -47,14 +41,10 @@ impl Client for GelbooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&[
-                ("page", "dapi"),
-                ("s", "post"),
-                ("q", "index"),
-                ("json", "1"),
+            .query(&BaseQuery::GelbooruLike.join(&[
                 ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
-            ])
+            ]))
             .send()
             .await?
             .json::<GelbooruResponse>()

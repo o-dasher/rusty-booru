@@ -22,6 +22,32 @@ pub trait ClientInformation {
     type Post;
 }
 
+pub type QueryTuple = (&'static str, &'static str);
+pub type QueryVec = Vec<(&'static str, &'static str)>;
+
+pub enum BaseQuery {
+    GelbooruLike,
+}
+
+impl BaseQuery {
+    pub fn get(&self) -> QueryVec {
+        match self {
+            BaseQuery::GelbooruLike => vec![
+                ("page", "dapi"),
+                ("s", "post"),
+                ("q", "index"),
+                ("json", "1"),
+            ],
+        }
+    }
+
+    pub fn join<'a>(&self, other: &'a [QueryTuple]) -> QueryVec {
+        let mut v = self.get();
+        v.extend_from_slice(other);
+        v
+    }
+}
+
 #[async_trait]
 pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
     fn builder() -> ClientBuilder<Self> {
@@ -39,7 +65,7 @@ pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
 impl<T: Client + ClientInformation> ClientBuilder<T> {
     pub fn new() -> Self {
         Self {
-            client: reqwest::Client::new(),
+            client: reqwest::lient::new(),
             tags: Tags(vec![]),
             limit: 100,
             url: T::URL.to_string(),
@@ -48,7 +74,6 @@ impl<T: Client + ClientInformation> ClientBuilder<T> {
 
     pub fn any_tag(mut self, tag: Tag<T>) -> Self {
         self.tags.0.push(tag);
-
         self
     }
 

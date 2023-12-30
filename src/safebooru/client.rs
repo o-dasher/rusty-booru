@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::client::{Client, ClientBuilder, ClientInformation};
+use crate::shared::client::{BaseQuery, Client, ClientBuilder, ClientInformation};
 
 use super::model::{SafebooruPost, SafebooruRating};
 
@@ -24,13 +24,9 @@ impl Client for SafebooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&[
-                ("page", "dapi"),
-                ("s", "post"),
-                ("q", "index"),
-                ("json", "1"),
+            .query(&BaseQuery::GelbooruLike.join(&[
                 ("id", &id.to_string()),
-            ])
+            ]))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
@@ -44,14 +40,10 @@ impl Client for SafebooruClient {
         builder
             .client
             .get(format!("{}/index.php", &builder.url))
-            .query(&[
-                ("page", "dapi"),
-                ("s", "post"),
-                ("q", "index"),
-                ("json", "1"),
+            .query(&BaseQuery::GelbooruLike.join(&[
                 ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
-            ])
+            ]))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()

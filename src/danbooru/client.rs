@@ -31,18 +31,6 @@ impl ClientInformation for DanbooruClient {
 
 #[async_trait]
 impl Client for DanbooruClient {
-    fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        match validates {
-            ValidationType::Tags(tags) => {
-                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 1 {
-                    Err(ValidationError::TooManyTags)?
-                }
-            }
-        }
-
-        Ok(())
-    }
-
     /// Directly get a post by its unique Id
     async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
         let builder = &self.0;
@@ -74,5 +62,17 @@ impl Client for DanbooruClient {
             .await?
             .json::<Vec<DanbooruPost>>()
             .await
+    }
+
+    fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
+        match validates {
+            ValidationType::Tags(tags) => {
+                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 1 {
+                    Err(ValidationError::TooManyTags)?
+                }
+            }
+        }
+
+        Ok(())
     }
 }
