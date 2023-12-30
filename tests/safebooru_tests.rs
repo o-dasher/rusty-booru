@@ -10,6 +10,7 @@ mod safebooru {
         let posts = SafebooruClient::builder()
             .tag("kafuu_chino")
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -23,6 +24,7 @@ mod safebooru {
             .tag("kafuu_chino")
             .rating(SafebooruRating::General)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -36,6 +38,7 @@ mod safebooru {
             .tag("kafuu_chino")
             .sort(Sort::Rating)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -49,6 +52,7 @@ mod safebooru {
             .tag("kafuu_chino")
             .blacklist_tag(SafebooruRating::Explicit)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -62,6 +66,7 @@ mod safebooru {
             .tag("kafuu_chino")
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -76,6 +81,7 @@ mod safebooru {
             .tag("bangs")
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -89,6 +95,7 @@ mod safebooru {
             .tag("kafuu_chino")
             .random()
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -98,10 +105,17 @@ mod safebooru {
 
     #[tokio::test]
     async fn get_post_by_id() {
-        let post = SafebooruClient::builder().build().get_by_id(4348760).await;
+        let post = SafebooruClient::builder()
+            .build()
+            .unwrap()
+            .get_by_id(4348760)
+            .await;
 
         assert!(post.is_ok());
-        assert_eq!("3e407a7848804119f1064c2aac731545", post.unwrap().hash);
+        assert_eq!(
+            "3e407a7848804119f1064c2aac731545",
+            post.unwrap().unwrap().hash
+        );
     }
 
     #[test]

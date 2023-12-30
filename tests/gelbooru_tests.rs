@@ -9,6 +9,7 @@ mod gelbooru {
         let posts = GelbooruClient::builder()
             .tag("kafuu_chino")
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -22,6 +23,7 @@ mod gelbooru {
             .tag("kafuu_chino")
             .rating(GelbooruRating::General)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -35,6 +37,7 @@ mod gelbooru {
             .tag("kafuu_chino")
             .sort(Sort::Score)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -48,6 +51,7 @@ mod gelbooru {
             .tag("kafuu_chino")
             .blacklist_tag(GelbooruRating::Explicit)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -62,6 +66,7 @@ mod gelbooru {
             .rating(GelbooruRating::General)
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -76,6 +81,7 @@ mod gelbooru {
             .tag("table")
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -89,6 +95,7 @@ mod gelbooru {
             .tag("kafuu_chino")
             .random()
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -98,10 +105,14 @@ mod gelbooru {
 
     #[tokio::test]
     async fn get_post_by_id() {
-        let post = GelbooruClient::builder().build().get_by_id(7898595).await;
+        let post = GelbooruClient::builder()
+            .build()
+            .unwrap()
+            .get_by_id(7898595)
+            .await;
 
         assert!(post.is_ok());
-        assert_eq!("e40b797a0e26755b2c0dd7a34d8c95ce", post.unwrap().md5);
+        assert_eq!("e40b797a0e26755b2c0dd7a34d8c95ce", post.unwrap().unwrap().md5);
     }
 
     #[test]

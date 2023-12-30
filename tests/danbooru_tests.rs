@@ -11,6 +11,7 @@ mod danbooru {
             .default_url("https://testbooru.donmai.us")
             .tag("kafuu_chino")
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -25,6 +26,7 @@ mod danbooru {
             .tag("kafuu_chino")
             .rating(DanbooruRating::General)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -39,6 +41,7 @@ mod danbooru {
             .tag("kafuu_chino")
             .sort(Sort::Rating)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -53,6 +56,7 @@ mod danbooru {
             .tag("kafuu_chino")
             .blacklist_tag(DanbooruRating::Explicit)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -67,6 +71,7 @@ mod danbooru {
             .tag("kafuu_chino")
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -82,6 +87,7 @@ mod danbooru {
             .tag("bangs")
             .limit(3)
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -96,6 +102,7 @@ mod danbooru {
             .tag("kafuu_chino")
             .random()
             .build()
+            .unwrap()
             .get()
             .await;
 
@@ -108,13 +115,14 @@ mod danbooru {
         let post = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .build()
+            .unwrap()
             .get_by_id(9423)
             .await;
 
         assert!(post.is_ok());
         assert_eq!(
             "15a1b49c26f5c684807a2f0b838f9e4c",
-            post.unwrap().md5.unwrap()
+            post.unwrap().unwrap().md5.unwrap()
         );
     }
 
