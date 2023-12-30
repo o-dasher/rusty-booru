@@ -11,6 +11,7 @@
 //!         .sort(Sort::Score)
 //!         .build()
 //!         .get()
+//!         .unwrap()
 //!         .await
 //!         .expect("There was an error. (•-•)");
 //!
