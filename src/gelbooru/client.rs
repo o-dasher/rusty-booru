@@ -1,11 +1,7 @@
 use async_trait::async_trait;
 use derive_more::From;
 
-use crate::shared::{
-    self,
-    client::{Client, ClientBuilder, ClientInformation},
-    model,
-};
+use crate::shared::client::{Client, ClientBuilder, ClientInformation};
 
 use super::model::*;
 
@@ -13,7 +9,7 @@ use super::model::*;
 #[derive(From)]
 pub struct GelbooruClient(ClientBuilder<Self>);
 
-impl<'a> ClientInformation for GelbooruClient {
+impl ClientInformation for GelbooruClient {
     const URL: &'static str = "https://gelbooru.com";
     const SORT: &'static str = "sort:";
 
@@ -34,8 +30,8 @@ impl Client for GelbooruClient {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
-                ("id", &id.to_string()),
                 ("json", "1"),
+                ("id", &id.to_string()),
             ])
             .send()
             .await?
@@ -55,9 +51,9 @@ impl Client for GelbooruClient {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
+                ("json", "1"),
                 ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
-                ("json", "1"),
             ])
             .send()
             .await?

@@ -28,8 +28,8 @@ impl Client for SafebooruClient {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
-                ("id", &id.to_string()),
                 ("json", "1"),
+                ("id", &id.to_string()),
             ])
             .send()
             .await?
@@ -48,9 +48,9 @@ impl Client for SafebooruClient {
                 ("page", "dapi"),
                 ("s", "post"),
                 ("q", "index"),
+                ("json", "1"),
                 ("limit", &builder.limit.to_string()),
                 ("tags", &builder.tags.unpack()),
-                ("json", "1"),
             ])
             .send()
             .await?

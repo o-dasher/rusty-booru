@@ -1,4 +1,3 @@
-use anyhow::{ensure, Result};
 use derive_more::From;
 
 use async_trait::async_trait;
@@ -6,7 +5,7 @@ use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
 
 use super::model::*;
-use crate::shared::client::*;
+use crate::shared::{client::*, model::ValidationError};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
 pub fn get_headers() -> HeaderMap {
@@ -22,7 +21,7 @@ pub fn get_headers() -> HeaderMap {
 #[derive(From)]
 pub struct DanbooruClient(ClientBuilder<Self>);
 
-impl<'a> ClientInformation for DanbooruClient {
+impl ClientInformation for DanbooruClient {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
 
@@ -32,13 +31,12 @@ impl<'a> ClientInformation for DanbooruClient {
 
 #[async_trait]
 impl Client for DanbooruClient {
-    fn validate(validates: ValidationType<'_, Self>) -> Result<()> {
+    fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
         match validates {
             ValidationType::Tags(tags) => {
-                ensure!(
-                    tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() <= 1,
-                    "Danbooru only allows two tags per query"
-                );
+                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 1 {
+                    Err(ValidationError::TooManyTags)?
+                }
             }
         }
 

@@ -3,8 +3,15 @@ use std::fmt::Display;
 use derive_is_enum_variant::is_enum_variant;
 use itertools::Itertools;
 use strum::Display;
+use thiserror::Error;
 
 use super::client::ClientInformation;
+
+#[derive(Error, Debug)]
+pub enum ValidationError {
+    #[error("Requested booru client with way too many tags.")]
+    TooManyTags,
+}
 
 pub enum Rating {
     Explicit,

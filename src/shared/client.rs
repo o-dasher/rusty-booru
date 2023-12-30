@@ -1,10 +1,7 @@
 use std::fmt::Display;
 
-use anyhow::Result;
-
+use super::model::{Rating, Sort, Tag, Tags, ValidationError};
 use async_trait::async_trait;
-
-use super::model::{Rating, Sort, Tag, Tags};
 
 pub struct ClientBuilder<T: ClientInformation> {
     pub client: reqwest::Client,
@@ -36,18 +33,12 @@ pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
     async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
 
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<()> {
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
         Ok(())
     }
 }
 
 impl<T: Client + ClientInformation> ClientBuilder<T> {
-    fn ensure_valid(&self, validates: ValidationType<'_, T>) {
-        if let Err(e) = T::validate(validates) {
-            panic!("{}", e)
-        }
-    }
-
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -67,12 +58,6 @@ impl<T: Client + ClientInformation> ClientBuilder<T> {
     }
 
     pub fn any_tag(mut self, tag: Tag<T>) -> Self {
-        // Danbooru has an special case for plain tags.
-        // it must have at max 2 plain tags.
-        if let Tag::Plain(..) = tag {
-            self.ensure_valid(ValidationType::Tags(&self.tags))
-        }
-
         self.tags.0.push(tag);
 
         self
@@ -111,8 +96,8 @@ impl<T: Client + ClientInformation> ClientBuilder<T> {
     }
 
     /// Convert the builder into the necessary client
-    pub fn build(self) -> T {
-        T::from(self)
+    pub fn build(self) -> Result<T, ValidationError> {
+        T::validate(ValidationType::Tags(&self.tags)).map(|_| T::from(self))
     }
 }
 
