@@ -3,7 +3,7 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
-use crate::shared::model::Rating;
+use crate::shared::model::{BooruPost, Rating};
 
 /// Individual post from [`GelbooruResponse`]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -59,6 +59,36 @@ impl From<Rating> for GelbooruRating {
             Rating::Safe => Self::Safe,
             Rating::Sensitive => Self::Sensitive,
             Rating::General => Self::General,
+        }
+    }
+}
+
+impl From<GelbooruRating> for Rating {
+    fn from(value: GelbooruRating) -> Self {
+        match value {
+            GelbooruRating::Explicit => Rating::Explicit,
+            GelbooruRating::Questionable => Rating::Questionable,
+            GelbooruRating::Safe => Rating::Safe,
+            GelbooruRating::Sensitive => Rating::Sensitive,
+            GelbooruRating::General => Rating::General,
+        }
+    }
+}
+
+impl From<GelbooruPost> for BooruPost {
+    fn from(post: GelbooruPost) -> Self {
+        BooruPost {
+            id: post.id,
+            created_at: post.created_at.into(),
+            score: post.score.into(),
+            width: post.width,
+            height: post.height,
+            md5: post.md5.into(),
+            file_url: post.file_url.into(),
+            tags: post.tags,
+            image: post.image.into(),
+            source: post.source.into(),
+            rating: post.rating.into(),
         }
     }
 }

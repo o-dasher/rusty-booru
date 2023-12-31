@@ -3,7 +3,7 @@ use derive_more::From;
 use serde::Deserialize;
 use strum::Display;
 
-use crate::shared::model::Rating;
+use crate::shared::model::{BooruPost, Rating};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SafebooruPost {
@@ -37,11 +37,40 @@ pub enum SafebooruRating {
 impl From<Rating> for SafebooruRating {
     fn from(value: Rating) -> Self {
         match value {
-            Rating::Explicit =>SafebooruRating::Explicit,
+            Rating::Explicit => SafebooruRating::Explicit,
             Rating::Questionable => SafebooruRating::Questionable,
             Rating::Safe => SafebooruRating::Safe,
             Rating::Sensitive => SafebooruRating::Questionable,
             Rating::General => SafebooruRating::General,
+        }
+    }
+}
+
+impl From<SafebooruRating> for Rating {
+    fn from(value: SafebooruRating) -> Self {
+        match value {
+            SafebooruRating::Safe => Rating::Safe,
+            SafebooruRating::General => Rating::General,
+            SafebooruRating::Questionable => Rating::Questionable,
+            SafebooruRating::Explicit => Rating::Explicit,
+        }
+    }
+}
+
+impl From<SafebooruPost> for BooruPost {
+    fn from(post: SafebooruPost) -> Self {
+        Self {
+            id: post.id,
+            created_at: None,
+            score: post.score.unwrap_or_default().into(),
+            width: post.width,
+            height: post.height,
+            md5: None,
+            file_url: None,
+            tags: post.tags,
+            image: post.image.into(),
+            source: None,
+            rating: post.rating.into(),
         }
     }
 }

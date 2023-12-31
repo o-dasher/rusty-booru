@@ -4,7 +4,7 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
-use crate::shared::model::{BooruPost, Rating};
+use crate::shared::model::Rating;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DanbooruPost {
@@ -80,31 +80,10 @@ impl From<Rating> for DanbooruRating {
     }
 }
 
-impl From<DanbooruRating> for Rating {
+impl From<DanbooruRating> for DanbooruRating {
     fn from(value: DanbooruRating) -> Self {
         match value {
-            DanbooruRating::Explicit => Rating::Explicit,
-            DanbooruRating::Questionable => Rating::Questionable,
-            DanbooruRating::Sensitive => Rating::Sensitive,
-            DanbooruRating::General => Rating::General,
-        }
-    }
-}
 
-impl From<DanbooruPost> for BooruPost {
-    fn from(value: DanbooruPost) -> Self {
-        Self {
-            id: value.id,
-            created_at: value.created_at.into(),
-            score: value.score.into(),
-            width: value.image_width,
-            height: value.image_height,
-            md5: value.md5.into(),
-            file_url: value.file_url,
-            tags: value.tag_string,
-            image: None,
-            source: value.source.into(),
-            rating: value.rating.unwrap_or(DanbooruRating::Sensitive).into(),
         }
     }
 }
