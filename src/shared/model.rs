@@ -5,7 +5,7 @@ use itertools::Itertools;
 use strum::Display;
 use thiserror::Error;
 
-use super::client::ClientInformation;
+use super::client::{ClientInformation, ClientTypes};
 
 #[derive(Error, Debug)]
 pub enum ValidationError {
@@ -13,6 +13,8 @@ pub enum ValidationError {
     TooManyTags,
 }
 
+#[derive(Display, Clone)]
+#[strum(serialize_all = "lowercase")]
 pub enum Rating {
     Explicit,
     Questionable,
@@ -35,15 +37,15 @@ pub enum Sort {
     Random,
 }
 
-#[derive(is_enum_variant)]
-pub enum Tag<T: ClientInformation> {
+#[derive(is_enum_variant, Clone)]
+pub enum Tag<T: ClientTypes> {
     Plain(String),
     Blacklist(String),
     Rating(T::Rating),
     Sort(Sort),
 }
 
-impl<T: ClientInformation> Display for Tag<T> {
+impl<T: ClientInformation + ClientTypes> Display for Tag<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Tag::Plain(tag) => write!(f, "{}", tag),
@@ -54,9 +56,9 @@ impl<T: ClientInformation> Display for Tag<T> {
     }
 }
 
-pub struct Tags<T: ClientInformation>(pub Vec<Tag<T>>);
+pub struct Tags<T: ClientTypes>(pub Vec<Tag<T>>);
 
-impl<T: ClientInformation> Tags<T> {
+impl<T: ClientTypes + ClientInformation> Tags<T> {
     pub fn unpack(&self) -> String {
         self.0
             .iter()

@@ -99,7 +99,7 @@ impl From<DanbooruPost> for BooruPost {
             score: value.score.into(),
             width: value.image_width,
             height: value.image_height,
-            md5: value.md5.into(),
+            md5: value.md5,
             file_url: value.file_url,
             tags: value.tag_string,
             image: None,

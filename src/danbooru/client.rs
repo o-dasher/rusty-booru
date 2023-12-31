@@ -19,11 +19,15 @@ pub fn get_headers() -> HeaderMap {
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
 #[derive(From)]
-pub struct DanbooruClient(ClientBuilder<Self>);
+pub struct DanbooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for DanbooruClient {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
+
+}
+
+impl ClientTypes for DanbooruClient {
 
     type Rating = DanbooruRating;
     type Post = DanbooruPost;

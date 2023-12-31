@@ -1,26 +1,28 @@
 use std::fmt::Display;
 
-use super::model::{Rating, Sort, Tag, Tags, ValidationError};
+use super::model::{BooruPost, Rating, Sort, Tag, Tags, ValidationError};
 use async_trait::async_trait;
 use itertools::Itertools;
 
-pub struct ClientBuilder<T: ClientInformation> {
+pub struct ClientBuilder<T: ClientTypes> {
     pub client: reqwest::Client,
     pub tags: Tags<T>,
     pub limit: u32,
     pub url: String,
 }
 
-pub enum ValidationType<'a, T: ClientInformation> {
+pub enum ValidationType<'a, T: ClientTypes> {
     Tags(&'a Tags<T>),
 }
 
 pub trait ClientInformation {
     const URL: &'static str;
     const SORT: &'static str;
+}
 
+pub trait ClientTypes {
     type Rating: From<Rating> + Display;
-    type Post;
+    type Post: Into<BooruPost>;
 }
 
 pub type QueryVec = Vec<(String, String)>;
@@ -34,12 +36,18 @@ pub enum QueryMode {
     Multiple,
 }
 
-#[async_trait]
-pub trait Client: From<ClientBuilder<Self>> + ClientInformation {
-    fn builder() -> ClientBuilder<Self> {
+pub trait WithClientBuilder<T: ClientTypes> {
+    fn builder() -> ClientBuilder<T>;
+}
+
+impl<T: ClientTypes + From<ClientBuilder<T>>> WithClientBuilder<T> for T {
+    fn builder() -> ClientBuilder<T> {
         ClientBuilder::new()
     }
+}
 
+#[async_trait]
+pub trait Client: From<ClientBuilder<Self>> + ClientTypes + ClientInformation {
     async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error>;
     async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
 
@@ -86,7 +94,7 @@ where
     }
 }
 
-impl<T: Client + ClientInformation> ClientBuilder<T> {
+impl<T: ClientTypes + ClientInformation + From<ClientBuilder<T>>> ClientBuilder<T> {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -144,4 +152,3 @@ impl<T: Client + ClientInformation> Default for ClientBuilder<T> {
         Self::new()
     }
 }
-

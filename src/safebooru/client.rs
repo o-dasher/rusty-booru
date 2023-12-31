@@ -2,18 +2,20 @@ use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
-    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery,
+    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery, ClientTypes,
 };
 
 use super::model::{SafebooruPost, SafebooruRating};
 
 #[derive(From)]
-pub struct SafebooruClient(ClientBuilder<Self>);
+pub struct SafebooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for SafebooruClient {
     const URL: &'static str = "https://safebooru.org";
     const SORT: &'static str = "sort:";
+}
 
+impl ClientTypes for SafebooruClient {
     type Post = SafebooruPost;
     type Rating = SafebooruRating;
 }

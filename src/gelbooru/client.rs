@@ -2,19 +2,21 @@ use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
-    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery,
+    Client, ClientBuilder, ClientInformation, ClientTypes, QueryLike, QueryMode, WithCommonQuery,
 };
 
 use super::model::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]
-pub struct GelbooruClient(ClientBuilder<Self>);
+pub struct GelbooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for GelbooruClient {
     const URL: &'static str = "https://gelbooru.com";
     const SORT: &'static str = "sort:";
+}
 
+impl ClientTypes for GelbooruClient {
     type Post = GelbooruPost;
     type Rating = GelbooruRating;
 }

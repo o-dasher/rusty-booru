@@ -1,8 +1,10 @@
+pub mod generic_tests;
+
 #[cfg(test)]
 mod safebooru {
     use booru_rs::{
         safebooru::{client::SafebooruClient, model::SafebooruRating},
-        shared::{client::Client, model::Sort},
+        shared::{client::{Client, WithClientBuilder}, model::Sort},
     };
 
     #[tokio::test]

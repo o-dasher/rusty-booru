@@ -1,7 +1,7 @@
 mod gelbooru {
     use booru_rs::{
         gelbooru::{client::GelbooruClient, model::GelbooruRating},
-        shared::{client::Client, model::Sort},
+        shared::{client::{Client, WithClientBuilder}, model::Sort},
     };
 
     #[tokio::test]
