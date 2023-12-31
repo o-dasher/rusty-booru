@@ -10,8 +10,8 @@
 //!         .rating(DanbooruRating::General)
 //!         .sort(Sort::Score)
 //!         .build()
-//!         .get()
 //!         .unwrap()
+//!         .get()
 //!         .await
 //!         .expect("There was an error. (•-•)");
 //!
