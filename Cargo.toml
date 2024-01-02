@@ -5,7 +5,7 @@ edition = "2021"
 description = "An async Booru client for Rust"
 license = "MIT/Apache-2.0"
 documentation = "https://docs.rs/booru-rs"
-repository = "https://github.com/ajiiisai/booru-rs"
+repository = "https://github.com/o-dasher/rusty-booru.git"
 readme = "README.md"
 
 [profile.dev]
