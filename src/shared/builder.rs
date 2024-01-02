@@ -8,6 +8,7 @@ use crate::{
 use super::{
     client::{
         ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher, ClientTypes,
+        ValidatedQuery,
     },
     model::{BooruPost, Rating, Tag, ValidationError},
 };
@@ -60,11 +61,15 @@ macro_rules! handle_request {
     }
 }
 
-impl ClientQueryBuilder<GenericClient> {
-    fn convert<T: ClientTypes + ClientInformation>(&self) -> ClientQueryBuilder<T> {
+impl QueryBuilderRules for GenericClient {}
+
+impl ValidatedQuery<GenericClient> {
+    fn convert<T: ClientTypes + ClientInformation + QueryBuilderRules>(
+        &self,
+    ) -> ClientQueryBuilder<T> {
         let mut query = ClientQueryBuilder::new();
 
-        for tag in self.tags.0.iter() {
+        for tag in self.0.tags.0.iter() {
             query = query.tag::<Tag<T>>(tag.into());
         }
 
@@ -79,7 +84,7 @@ impl ClientQueryBuilder<GenericClient> {
         async fn request<
             T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
         >(
-            query: &ClientQueryBuilder<GenericClient>,
+            query: &ValidatedQuery<GenericClient>,
             id: u32,
         ) -> Result<Option<BooruPost>, GenericClientError>
         where
@@ -100,7 +105,7 @@ impl ClientQueryBuilder<GenericClient> {
         async fn request<
             T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
         >(
-            query: &ClientQueryBuilder<GenericClient>,
+            query: &ValidatedQuery<GenericClient>,
         ) -> Result<Vec<BooruPost>, GenericClientError>
         where
             ClientQueryDispatcher<T>: DispatcherTrait<T>,
@@ -119,7 +124,6 @@ impl ClientQueryBuilder<GenericClient> {
 
 impl GenericClient {
     pub fn query() -> ClientQueryBuilder<GenericClient> {
-
         ClientQueryBuilder::new()
     }
 }

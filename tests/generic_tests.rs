@@ -6,6 +6,8 @@ mod generic {
     async fn get_posts_with_tag() {
         let posts = GenericClient::query()
             .tag("kafuu_chino")
+            .validate()
+            .unwrap()
             .get(BooruOption::Gelbooru)
             .await;
 

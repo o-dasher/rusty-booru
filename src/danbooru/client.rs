@@ -51,8 +51,8 @@ impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
             .get(format!("{}/posts.json", self.builder.url))
             .headers(get_headers())
             .query(&[
-                ("limit", &self.query.limit.to_string()),
-                ("tags", &self.query.tags.unpack()),
+                ("limit", &self.query.0.limit.to_string()),
+                ("tags", &self.query.0.tags.unpack()),
             ])
             .send()
             .await?

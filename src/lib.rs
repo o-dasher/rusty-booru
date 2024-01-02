@@ -1,7 +1,7 @@
 //! ### Usage
 //! ```
 //! use booru_rs::{danbooru::{client::DanbooruClient, model::DanbooruRating}};
-//! use booru_rs::shared::{client::{Client, WithClientBuilder}, model::Sort};
+//! use booru_rs::shared::{client::{WithClientBuilder, DispatcherTrait}, model::Sort};
 //!
 //! #[tokio::main]
 //! async fn main() {

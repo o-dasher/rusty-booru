@@ -18,6 +18,13 @@ mod safebooru {
             .get()
             .await;
 
+
+        // SafebooruClient::builder().query(|q| q.tag()) // In this case the query should be
+        // validated by the query function.
+        // In the case of a generic client builder the syntax should be as follow:
+        // GenericClient::builder().tag().validate(), so this pretty much means that the validation
+        // should be mainly done on the QueryBuilder sttruct rather than on the dispatcher.
+
         assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }

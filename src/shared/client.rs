@@ -69,14 +69,14 @@ pub trait WithCommonQuery {
     fn common_query_type() -> QueryLike;
 }
 
-pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation> {
-    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec;
+pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation + QueryBuilderRules> {
+    fn get_query(query: &ValidatedQuery<T>, query_mode: QueryMode) -> QueryVec;
 }
 
-impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommonQuery<T>
-    for ClientQueryDispatcher<T>
+impl<T: WithCommonQuery + ClientTypes + ClientInformation + QueryBuilderRules>
+    ImplementedWithCommonQuery<T> for ClientQueryDispatcher<T>
 {
-    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec {
+    fn get_query(query: &ValidatedQuery<T>, query_mode: QueryMode) -> QueryVec {
         let query_type = T::common_query_type();
 
         let mut base = match query_type {
@@ -95,8 +95,8 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommon
             QueryLike::Gelbooru => match query_mode {
                 QueryMode::Single(id) => vec![("id", id.to_string())],
                 QueryMode::Multiple => vec![
-                    ("limit", query.limit.to_string()),
-                    ("tags", query.tags.unpack()),
+                    ("limit", query.0.limit.to_string()),
+                    ("tags", query.0.tags.unpack()),
                 ],
             },
         }
@@ -115,18 +115,18 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommon
 // query, that can then be passed on to the proper Client that will be able to figure out the
 // proper way to handle the used query at runtime.
 
-pub struct ClientQueryBuilder<T: ClientTypes> {
+pub struct ClientQueryBuilder<T: ClientTypes + QueryBuilderRules> {
     pub tags: Tags<T>,
     pub limit: u32,
 }
 
-impl<T: ClientTypes> Default for ClientQueryBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules> Default for ClientQueryBuilder<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: ClientTypes> ClientQueryBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules> ClientQueryBuilder<T> {
     pub fn new() -> Self {
         Self {
             tags: Tags(Vec::new()),
@@ -164,7 +164,13 @@ impl<T: ClientTypes> ClientQueryBuilder<T> {
         self.limit = limit;
         self
     }
+
+    pub fn validate(self) -> Result<ValidatedQuery<T>, ValidationError> {
+        T::validate(ValidationType::Tags(&self.tags)).map(|_| ValidatedQuery(self))
+    }
 }
+
+pub struct ValidatedQuery<T: QueryBuilderRules + ClientTypes>(pub ClientQueryBuilder<T>);
 
 pub trait QueryBuilderRules: ClientTypes + Sized {
     fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
@@ -173,11 +179,18 @@ pub trait QueryBuilderRules: ClientTypes + Sized {
 }
 
 impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {
-    fn create_dispatcher(&self, query: ClientQueryBuilder<T>) -> ClientQueryDispatcher<T> {
+    fn create_dispatcher(&self, query: ValidatedQuery<T>) -> ClientQueryDispatcher<T> {
         ClientQueryDispatcher {
             builder: self.to_owned(),
             query,
         }
+    }
+
+    pub fn query_raw(
+        &self,
+        query: ClientQueryBuilder<T>,
+    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
+        query.validate().map(|query| self.create_dispatcher(query))
     }
 
     pub fn query(
@@ -187,21 +200,15 @@ impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {
         self.query_raw(query_fn(ClientQueryBuilder::new()))
     }
 
-    pub fn query_raw(
-        &self,
-        query: ClientQueryBuilder<T>,
-    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
-        T::validate(ValidationType::Tags(&query.tags)).map(|()| self.create_dispatcher(query))
-    }
-
+    // Dispatches an empty query. Useful if you want to get a post by its id.
     pub fn dispatch(&self) -> ClientQueryDispatcher<T> {
-        self.create_dispatcher(ClientQueryBuilder::new())
+        self.create_dispatcher(ValidatedQuery(ClientQueryBuilder::new()))
     }
 }
 
-pub struct ClientQueryDispatcher<T: ClientTypes> {
+pub struct ClientQueryDispatcher<T: ClientTypes + QueryBuilderRules> {
     pub builder: ClientBuilder<T>,
-    pub query: ClientQueryBuilder<T>,
+    pub query: ValidatedQuery<T>,
 }
 
 impl<T: ClientInformation + ClientTypes> ClientBuilder<T> {
