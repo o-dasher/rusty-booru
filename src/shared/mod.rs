@@ -1,8 +1,8 @@
-use std::fmt::Display;
-use itertools::Itertools;
 use self::client::{ClientInformation, ClientTypes};
-use crate::generic::Sort;
 use derive_is_enum_variant::is_enum_variant;
+use itertools::Itertools;
+use strum::Display;
+use std::fmt::Display;
 use thiserror::Error;
 
 pub mod client;
@@ -11,6 +11,20 @@ pub mod client;
 pub enum ValidationError {
     #[error("Requested booru client with way too many tags.")]
     TooManyTags,
+}
+
+#[derive(Debug, Clone, Display)]
+#[strum(serialize_all = "lowercase")]
+pub enum Sort {
+    Id,
+    Score,
+    Rating,
+    User,
+    Height,
+    Width,
+    Source,
+    Updated,
+    Random,
 }
 
 #[derive(is_enum_variant, Clone)]

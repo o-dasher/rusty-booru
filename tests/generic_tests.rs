@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod generic {
-    use booru_rs::shared::builder::{BooruOption, GenericClient};
+    use booru_rs::generic::{
+        client::{BooruOption, GenericClient},
+    };
 
     #[tokio::test]
     async fn get_posts_with_tag() {

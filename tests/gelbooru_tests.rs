@@ -1,10 +1,7 @@
 mod gelbooru {
     use booru_rs::{
         gelbooru::{client::GelbooruClient, GelbooruRating},
-        shared::{
-            client::{DispatcherTrait, WithClientBuilder},
-            model::Sort,
-        },
+        shared::{client::{DispatcherTrait, WithClientBuilder}, Sort},
     };
 
     #[tokio::test]
