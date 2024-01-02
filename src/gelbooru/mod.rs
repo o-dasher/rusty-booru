@@ -4,7 +4,7 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
-use crate::shared::model::{BooruPost, Rating};
+use crate::generic::{BooruPost, Rating};
 
 /// Individual post from [`GelbooruResponse`]
 #[derive(Serialize, Deserialize, Debug, Clone)]

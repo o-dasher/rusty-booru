@@ -2,17 +2,18 @@ use crate::{
     danbooru::client::DanbooruClient,
     gelbooru::client::GelbooruClient,
     safebooru::client::SafebooruClient,
-    shared::client::{DispatcherTrait, QueryBuilderRules, WithClientBuilder},
+    shared::{
+        client::{
+            ClientBuilder, ClientInformation, ClientQueryBuilder, ClientTypes, DispatcherTrait,
+            QueryBuilderRules, ValidatedQuery, ValidationType, WithClientBuilder, ClientQueryDispatcher,
+        },
+        Tag, ValidationError,
+    },
 };
 
-use super::{
-    client::{
-        ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher, ClientTypes,
-        ValidatedQuery, ValidationType,
-    },
-    model::{BooruPost, Rating, Tag, ValidationError},
-};
 use derive_more::From;
+
+use super::{BooruPost, Rating};
 
 pub struct GenericClient(ClientBuilder<Self>);
 
@@ -131,4 +132,3 @@ impl GenericClient {
         ClientQueryBuilder::new()
     }
 }
-

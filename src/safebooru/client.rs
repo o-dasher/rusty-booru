@@ -2,8 +2,9 @@ use derive_more::From;
 
 use crate::shared::{client::{
     ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery, ValidationType,
-}, model::ValidationError};
+    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, ValidationType,
+    WithCommonQuery,
+}, ValidationError};
 
 use super::*;
 

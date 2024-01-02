@@ -3,7 +3,7 @@ use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
 
 use super::*;
-use crate::shared::{client::*, model::ValidationError};
+use crate::shared::{client::*, ValidationError};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
 pub fn get_headers() -> HeaderMap {

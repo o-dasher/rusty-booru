@@ -1,6 +1,8 @@
 use std::{fmt::Display, marker::PhantomData};
 
-use super::model::{BooruPost, Rating, Sort, Tag, Tags, ValidationError};
+use crate::generic::{BooruPost, Rating};
+
+use super::{Sort, Tag, Tags, ValidationError};
 use itertools::Itertools;
 
 pub struct ClientBuilder<T: ClientTypes> {

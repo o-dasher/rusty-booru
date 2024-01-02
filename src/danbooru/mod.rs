@@ -4,7 +4,7 @@ use derive_more::From;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
-use crate::shared::model::{BooruPost, Rating};
+use crate::generic::{BooruPost, Rating};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DanbooruPost {

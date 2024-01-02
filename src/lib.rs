@@ -28,3 +28,4 @@ pub mod danbooru;
 pub mod gelbooru;
 pub mod safebooru;
 pub mod shared;
+pub mod generic;
