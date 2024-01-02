@@ -1,5 +1,5 @@
 [package]
-name = "booru-rs"
+name = "rusty-booru"
 version = "0.2.6"
 edition = "2021"
 description = "An async Booru client for Rust"
