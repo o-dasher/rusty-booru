@@ -4,7 +4,10 @@ pub mod generic_tests;
 mod safebooru {
     use booru_rs::{
         safebooru::{client::SafebooruClient, SafebooruRating},
-        shared::{client::{DispatcherTrait, WithClientBuilder}, Sort},
+        shared::{
+            client::{DispatcherTrait, WithClientBuilder},
+            Sort,
+        },
     };
 
     #[tokio::test]

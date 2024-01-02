@@ -1,8 +1,8 @@
 use self::client::{ClientInformation, ClientTypes};
 use derive_is_enum_variant::is_enum_variant;
 use itertools::Itertools;
-use strum::Display;
 use std::fmt::Display;
+use strum::Display;
 use thiserror::Error;
 
 pub mod client;

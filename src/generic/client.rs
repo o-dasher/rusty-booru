@@ -4,8 +4,9 @@ use crate::{
     safebooru::client::SafebooruClient,
     shared::{
         client::{
-            ClientBuilder, ClientInformation, ClientQueryBuilder, ClientTypes, DispatcherTrait,
-            QueryBuilderRules, ValidatedQuery, ValidationType, WithClientBuilder, ClientQueryDispatcher,
+            ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher,
+            ClientTypes, DispatcherTrait, QueryBuilderRules, ValidatedQuery, ValidationType,
+            WithClientBuilder,
         },
         Tag, ValidationError,
     },

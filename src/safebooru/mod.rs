@@ -5,7 +5,7 @@ use derive_more::From;
 use serde::Deserialize;
 use strum::Display;
 
-use crate::generic::{Rating, BooruPost};
+use crate::generic::{BooruPost, Rating};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SafebooruPost {

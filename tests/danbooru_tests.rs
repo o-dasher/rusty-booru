@@ -2,7 +2,10 @@
 mod danbooru {
     use booru_rs::{
         danbooru::{client::DanbooruClient, DanbooruRating},
-        shared::{client::{DispatcherTrait, WithClientBuilder}, Sort},
+        shared::{
+            client::{DispatcherTrait, WithClientBuilder},
+            Sort,
+        },
     };
 
     #[tokio::test]
