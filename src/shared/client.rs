@@ -175,9 +175,7 @@ impl<T: ClientTypes + QueryBuilderRules> ClientQueryBuilder<T> {
 pub struct ValidatedQuery<T: QueryBuilderRules + ClientTypes>(pub ClientQueryBuilder<T>);
 
 pub trait QueryBuilderRules: ClientTypes + Sized {
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        Ok(())
-    }
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError>;
 }
 
 impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {

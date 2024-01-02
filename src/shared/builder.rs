@@ -8,7 +8,7 @@ use crate::{
 use super::{
     client::{
         ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher, ClientTypes,
-        ValidatedQuery,
+        ValidatedQuery, ValidationType,
     },
     model::{BooruPost, Rating, Tag, ValidationError},
 };
@@ -60,8 +60,6 @@ macro_rules! handle_request {
         }
     }
 }
-
-impl QueryBuilderRules for GenericClient {}
 
 impl ValidatedQuery<GenericClient> {
     fn convert<T: ClientTypes + ClientInformation + QueryBuilderRules>(
@@ -122,8 +120,15 @@ impl ValidatedQuery<GenericClient> {
     }
 }
 
+impl QueryBuilderRules for GenericClient {
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
+        Ok(())
+    }
+}
+
 impl GenericClient {
     pub fn query() -> ClientQueryBuilder<GenericClient> {
         ClientQueryBuilder::new()
     }
 }
+

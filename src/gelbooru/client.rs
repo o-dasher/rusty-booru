@@ -1,9 +1,9 @@
 use derive_more::From;
 
-use crate::shared::client::{
+use crate::shared::{client::{
     ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
-};
+    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery, ValidationType,
+}, model::ValidationError};
 
 use super::*;
 
@@ -53,4 +53,10 @@ impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
     }
 }
 
-impl QueryBuilderRules for GelbooruClient {}
+impl QueryBuilderRules for GelbooruClient {
+    fn validate(
+        _validates: ValidationType<'_, Self>,
+    ) -> Result<(), ValidationError> {
+        Ok(())
+    }
+}

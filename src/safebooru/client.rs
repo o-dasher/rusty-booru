@@ -1,9 +1,9 @@
 use derive_more::From;
 
-use crate::shared::client::{
+use crate::shared::{client::{
     ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
-};
+    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery, ValidationType,
+}, model::ValidationError};
 
 use super::*;
 
@@ -51,4 +51,8 @@ impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient>
     }
 }
 
-impl QueryBuilderRules for SafebooruClient {}
+impl QueryBuilderRules for SafebooruClient {
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
+        Ok(())
+    }
+}
