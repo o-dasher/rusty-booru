@@ -2,7 +2,8 @@ use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
-    Client, ClientBuilder, ClientInformation, ClientTypes, QueryLike, QueryMode, WithCommonQuery,
+    ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
+    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
 };
 
 use super::model::*;
@@ -28,15 +29,12 @@ impl WithCommonQuery for GelbooruClient {
 }
 
 #[async_trait]
-impl Client for GelbooruClient {
-    /// Directly get a post by its unique Id
+impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
     async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+        self.builder
             .client
-            .get(format!("{}/index.php", &builder.url))
-            .query(&self.get_query(builder, QueryMode::Single(id)))
+            .get(format!("{}/index.php", &self.builder.url))
+            .query(&Self::get_query(&self.query, QueryMode::Single(id)))
             .send()
             .await?
             .json::<GelbooruResponse>()
@@ -44,14 +42,11 @@ impl Client for GelbooruClient {
             .map(|r| r.posts.into_iter().next())
     }
 
-    /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+        self.builder
             .client
-            .get(format!("{}/index.php", &builder.url))
-            .query(&self.get_query(builder, QueryMode::Multiple))
+            .get(format!("{}/index.php", &self.builder.url))
+            .query(&Self::get_query(&self.query, QueryMode::Multiple))
             .send()
             .await?
             .json::<GelbooruResponse>()
@@ -59,3 +54,5 @@ impl Client for GelbooruClient {
             .map(|r| r.posts)
     }
 }
+
+impl QueryBuilderRules for GelbooruClient {}

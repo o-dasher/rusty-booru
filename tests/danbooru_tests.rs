@@ -2,15 +2,17 @@
 mod danbooru {
     use booru_rs::{
         danbooru::{client::DanbooruClient, model::DanbooruRating},
-        shared::{client::{Client, WithClientBuilder}, model::Sort},
+        shared::{
+            client::{DispatcherTrait, WithClientBuilder},
+            model::Sort,
+        },
     };
 
     #[tokio::test]
     async fn get_posts_with_tag() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .build()
+            .query(|q| q.tag("kafuu_chino"))
             .unwrap()
             .get()
             .await;
@@ -23,9 +25,7 @@ mod danbooru {
     async fn get_posts_with_rating() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .rating(DanbooruRating::General)
-            .build()
+            .query(|q| q.tag("kafuu_chino").rating(DanbooruRating::General))
             .unwrap()
             .get()
             .await;
@@ -38,9 +38,7 @@ mod danbooru {
     async fn get_posts_with_sort() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .sort(Sort::Rating)
-            .build()
+            .query(|q| q.tag("kafuu_chino").sort(Sort::Rating))
             .unwrap()
             .get()
             .await;
@@ -53,9 +51,7 @@ mod danbooru {
     async fn get_posts_with_blacklist_tag() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .blacklist_tag(DanbooruRating::Explicit)
-            .build()
+            .query(|q| q.tag("kafuu_chino").blacklist_tag(DanbooruRating::Explicit))
             .unwrap()
             .get()
             .await;
@@ -68,9 +64,7 @@ mod danbooru {
     async fn get_posts_with_limit() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .limit(3)
-            .build()
+            .query(|q| q.tag("kafuu_chino").limit(3))
             .unwrap()
             .get()
             .await;
@@ -83,10 +77,7 @@ mod danbooru {
     async fn get_posts_multiple_tags() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .tag("bangs")
-            .limit(3)
-            .build()
+            .query(|q| q.tag("kafuu_chino").tag("bangs").limit(3))
             .unwrap()
             .get()
             .await;
@@ -99,9 +90,7 @@ mod danbooru {
     async fn get_random_posts() {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .tag("kafuu_chino")
-            .random()
-            .build()
+            .query(|q| q.tag("kafuu_chino").random())
             .unwrap()
             .get()
             .await;
@@ -114,8 +103,7 @@ mod danbooru {
     async fn get_post_by_id() {
         let post = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
-            .build()
-            .unwrap()
+            .dispatch()
             .get_by_id(9423)
             .await;
 

@@ -2,7 +2,8 @@ use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
-    Client, ClientBuilder, ClientInformation, QueryLike, QueryMode, WithCommonQuery, ClientTypes,
+    ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
+    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
 };
 
 use super::model::{SafebooruPost, SafebooruRating};
@@ -27,14 +28,12 @@ impl WithCommonQuery for SafebooruClient {
 }
 
 #[async_trait]
-impl Client for SafebooruClient {
-    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<SafebooruPost>, reqwest::Error> {
+        self.builder
             .client
-            .get(format!("{}/index.php", &builder.url))
-            .query(&self.get_query(builder, QueryMode::Single(id)))
+            .get(&format!("{}/index.php", &self.builder.url))
+            .query(&Self::get_query(&self.query, QueryMode::Single(id)))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
@@ -42,16 +41,16 @@ impl Client for SafebooruClient {
             .map(|r| r.into_iter().next())
     }
 
-    async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+    async fn get(&self) -> Result<Vec<SafebooruPost>, reqwest::Error> {
+        self.builder
             .client
-            .get(format!("{}/index.php", &builder.url))
-            .query(&self.get_query(builder, QueryMode::Multiple))
+            .get(format!("{}/index.php", &self.builder.url))
+            .query(&Self::get_query(&self.query, QueryMode::Multiple))
             .send()
             .await?
             .json::<Vec<SafebooruPost>>()
             .await
     }
 }
+
+impl QueryBuilderRules for SafebooruClient {}

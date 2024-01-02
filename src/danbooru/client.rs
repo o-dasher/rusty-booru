@@ -24,24 +24,19 @@ pub struct DanbooruClient(pub ClientBuilder<Self>);
 impl ClientInformation for DanbooruClient {
     const URL: &'static str = "https://danbooru.donmai.us";
     const SORT: &'static str = "order:";
-
 }
 
 impl ClientTypes for DanbooruClient {
-
     type Rating = DanbooruRating;
     type Post = DanbooruPost;
 }
 
 #[async_trait]
-impl Client for DanbooruClient {
-    /// Directly get a post by its unique Id
-    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<DanbooruPost>, reqwest::Error> {
+        self.builder
             .client
-            .get(format!("{}/posts/{id}.json", builder.url))
+            .get(format!("{}/posts/{id}.json", self.builder.url))
             .headers(get_headers())
             .send()
             .await?
@@ -50,24 +45,23 @@ impl Client for DanbooruClient {
             .map(Some)
     }
 
-    /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
-    async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error> {
-        let builder = &self.0;
-
-        builder
+    async fn get(&self) -> Result<Vec<DanbooruPost>, reqwest::Error> {
+        self.builder
             .client
-            .get(format!("{}/posts.json", builder.url))
+            .get(format!("{}/posts.json", self.builder.url))
             .headers(get_headers())
             .query(&[
-                ("limit", &builder.limit.to_string()),
-                ("tags", &builder.tags.unpack()),
+                ("limit", &self.query.limit.to_string()),
+                ("tags", &self.query.tags.unpack()),
             ])
             .send()
             .await?
             .json::<Vec<DanbooruPost>>()
             .await
     }
+}
 
+impl QueryBuilderRules for DanbooruClient {
     fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
         match validates {
             ValidationType::Tags(tags) => {

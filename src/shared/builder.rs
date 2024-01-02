@@ -1,11 +1,14 @@
 use crate::{
-    danbooru::client::DanbooruClient, gelbooru::client::GelbooruClient,
+    danbooru::client::DanbooruClient,
+    gelbooru::client::GelbooruClient,
     safebooru::client::SafebooruClient,
-    shared::client::WithClientBuilder
+    shared::client::{DispatcherTrait, QueryBuilderRules, WithClientBuilder},
 };
 
 use super::{
-    client::{Client, ClientBuilder, ClientTypes},
+    client::{
+        ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher, ClientTypes,
+    },
     model::{BooruPost, Rating, Tag, ValidationError},
 };
 use derive_more::From;
@@ -57,15 +60,15 @@ macro_rules! handle_request {
     }
 }
 
-impl GenericClient {
-    fn build<T: Client + From<ClientBuilder<T>>>(&self) -> Result<T, ValidationError> {
-        let mut builder = T::builder().limit(self.0.limit);
+impl ClientQueryBuilder<GenericClient> {
+    fn convert<T: ClientTypes + ClientInformation>(&self) -> ClientQueryBuilder<T> {
+        let mut query = ClientQueryBuilder::new();
 
-        for tag in self.0.tags.0.iter() {
-            builder = builder.tag::<Tag<T>>(tag.into());
+        for tag in self.tags.0.iter() {
+            query = query.tag::<Tag<T>>(tag.into());
         }
 
-        builder.build()
+        query
     }
 
     pub async fn get_by_id(
@@ -73,12 +76,17 @@ impl GenericClient {
         id: u32,
         booru: BooruOption,
     ) -> Result<Option<BooruPost>, GenericClientError> {
-        async fn request<T: Client>(
-            client: &GenericClient,
+        async fn request<
+            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
+        >(
+            query: &ClientQueryBuilder<GenericClient>,
             id: u32,
-        ) -> Result<Option<BooruPost>, GenericClientError> {
-            client
-                .build::<T>()?
+        ) -> Result<Option<BooruPost>, GenericClientError>
+        where
+            ClientQueryDispatcher<T>: DispatcherTrait<T>,
+        {
+            T::builder()
+                .query_raw(query.convert())?
                 .get_by_id(id)
                 .await
                 .map(|v| v.map(Into::into))
@@ -89,11 +97,16 @@ impl GenericClient {
     }
 
     pub async fn get(&self, booru: BooruOption) -> Result<Vec<BooruPost>, GenericClientError> {
-        async fn request<T: Client>(
-            client: &GenericClient,
-        ) -> Result<Vec<BooruPost>, GenericClientError> {
-            client
-                .build::<T>()?
+        async fn request<
+            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
+        >(
+            query: &ClientQueryBuilder<GenericClient>,
+        ) -> Result<Vec<BooruPost>, GenericClientError>
+        where
+            ClientQueryDispatcher<T>: DispatcherTrait<T>,
+        {
+            T::builder()
+                .query_raw(query.convert())?
                 .get()
                 .await
                 .map_err(Into::into)
@@ -101,5 +114,12 @@ impl GenericClient {
         }
 
         handle_request!(booru, (self))
+    }
+}
+
+impl GenericClient {
+    pub fn query() -> ClientQueryBuilder<GenericClient> {
+
+        ClientQueryBuilder::new()
     }
 }

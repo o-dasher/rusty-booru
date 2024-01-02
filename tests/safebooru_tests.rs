@@ -4,14 +4,16 @@ pub mod generic_tests;
 mod safebooru {
     use booru_rs::{
         safebooru::{client::SafebooruClient, model::SafebooruRating},
-        shared::{client::{Client, WithClientBuilder}, model::Sort},
+        shared::{
+            client::{DispatcherTrait, WithClientBuilder},
+            model::Sort,
+        },
     };
 
     #[tokio::test]
     async fn get_posts_with_tag() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .build()
+            .query(|q| q.tag("kafuu_chino"))
             .unwrap()
             .get()
             .await;
@@ -23,9 +25,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_posts_with_rating() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .rating(SafebooruRating::General)
-            .build()
+            .query(|q| q.tag("kafuu_chino").rating(SafebooruRating::General))
             .unwrap()
             .get()
             .await;
@@ -37,9 +37,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_posts_with_sort() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .sort(Sort::Rating)
-            .build()
+            .query(|q| q.tag("kafuu_chino").sort(Sort::Rating))
             .unwrap()
             .get()
             .await;
@@ -51,9 +49,10 @@ mod safebooru {
     #[tokio::test]
     async fn get_posts_with_blacklist_tag() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .blacklist_tag(SafebooruRating::Explicit)
-            .build()
+            .query(|q| {
+                q.tag("kafuu_chino")
+                    .blacklist_tag(SafebooruRating::Explicit)
+            })
             .unwrap()
             .get()
             .await;
@@ -65,9 +64,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_posts_with_limit() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .limit(3)
-            .build()
+            .query(|q| q.tag("kafuu_chino").limit(3))
             .unwrap()
             .get()
             .await;
@@ -79,10 +76,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_posts_multiple_tags() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .tag("bangs")
-            .limit(3)
-            .build()
+            .query(|q| q.tag("kafuu_chino").tag("bangs").limit(3))
             .unwrap()
             .get()
             .await;
@@ -94,9 +88,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_random_posts() {
         let posts = SafebooruClient::builder()
-            .tag("kafuu_chino")
-            .random()
-            .build()
+            .query(|q| q.tag("kafuu_chino").random())
             .unwrap()
             .get()
             .await;
@@ -108,8 +100,7 @@ mod safebooru {
     #[tokio::test]
     async fn get_post_by_id() {
         let post = SafebooruClient::builder()
-            .build()
-            .unwrap()
+            .dispatch()
             .get_by_id(4348760)
             .await;
 

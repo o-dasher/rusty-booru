@@ -1,14 +1,12 @@
 #[cfg(test)]
-mod safebooru {
-    use booru_rs::shared::builder::GenericClient;
+mod generic {
+    use booru_rs::shared::builder::{BooruOption, GenericClient};
 
     #[tokio::test]
     async fn get_posts_with_tag() {
-        let posts = GenericClient::builder()
+        let posts = GenericClient::query()
             .tag("kafuu_chino")
-            .build()
-            .unwrap()
-            .get()
+            .get(BooruOption::Gelbooru)
             .await;
 
         assert!(posts.is_ok());

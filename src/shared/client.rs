@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, marker::PhantomData};
 
 use super::model::{BooruPost, Rating, Sort, Tag, Tags, ValidationError};
 use async_trait::async_trait;
@@ -6,9 +6,19 @@ use itertools::Itertools;
 
 pub struct ClientBuilder<T: ClientTypes> {
     pub client: reqwest::Client,
-    pub tags: Tags<T>,
-    pub limit: u32,
     pub url: String,
+
+    _marker: PhantomData<T>,
+}
+
+impl<T: ClientTypes> Clone for ClientBuilder<T> {
+    fn clone(&self) -> Self {
+        Self {
+            client: self.client.clone(),
+            url: self.url.clone(),
+            _marker: self._marker,
+        }
+    }
 }
 
 pub enum ValidationType<'a, T: ClientTypes> {
@@ -40,29 +50,34 @@ pub trait WithClientBuilder<T: ClientTypes> {
     fn builder() -> ClientBuilder<T>;
 }
 
-impl<T: ClientTypes + From<ClientBuilder<T>>> WithClientBuilder<T> for T {
+impl<T: ClientInformation + ClientTypes + From<ClientBuilder<T>>> WithClientBuilder<T> for T {
     fn builder() -> ClientBuilder<T> {
         ClientBuilder::new()
     }
 }
 
 #[async_trait]
-pub trait Client: From<ClientBuilder<Self>> + ClientTypes + ClientInformation {
-    async fn get_by_id(&self, id: u32) -> Result<Option<Self::Post>, reqwest::Error>;
-    async fn get(&self) -> Result<Vec<Self::Post>, reqwest::Error>;
+pub trait DispatcherTrait<T: ClientTypes> {
+    /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
+    async fn get_by_id(&self, id: u32) -> Result<Option<T::Post>, reqwest::Error>;
 
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        Ok(())
-    }
+    /// Directly get a post by its unique Id
+    async fn get(&self) -> Result<Vec<T::Post>, reqwest::Error>;
 }
 
-pub trait WithCommonQuery
-where
-    Self: Client,
-{
+pub trait WithCommonQuery {
     fn common_query_type() -> QueryLike;
-    fn get_query(&self, builder: &ClientBuilder<Self>, query_mode: QueryMode) -> QueryVec {
-        let query_type = Self::common_query_type();
+}
+
+pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation> {
+    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec;
+}
+
+impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommonQuery<T>
+    for ClientQueryDispatcher<T>
+{
+    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec {
+        let query_type = T::common_query_type();
 
         let mut base = match query_type {
             QueryLike::Gelbooru => vec![
@@ -80,8 +95,8 @@ where
             QueryLike::Gelbooru => match query_mode {
                 QueryMode::Single(id) => vec![("id", id.to_string())],
                 QueryMode::Multiple => vec![
-                    ("limit", builder.limit.to_string()),
-                    ("tags", builder.tags.unpack()),
+                    ("limit", query.limit.to_string()),
+                    ("tags", query.tags.unpack()),
                 ],
             },
         }
@@ -94,13 +109,28 @@ where
     }
 }
 
-impl<T: ClientTypes + ClientInformation + From<ClientBuilder<T>>> ClientBuilder<T> {
+// ClientQueryBuilder is structured separately for a reason, it can't hold references to a client
+// builder that has an url. This because the generic client does not have a proper url, and thus
+// can't have the ClientInformation trait. By structuring it separately we can create a "contained"
+// query, that can then be passed on to the proper Client that will be able to figure out the
+// proper way to handle the used query at runtime.
+
+pub struct ClientQueryBuilder<T: ClientTypes> {
+    pub tags: Tags<T>,
+    pub limit: u32,
+}
+
+impl<T: ClientTypes> Default for ClientQueryBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: ClientTypes> ClientQueryBuilder<T> {
     pub fn new() -> Self {
         Self {
-            client: reqwest::Client::new(),
-            tags: Tags(vec![]),
+            tags: Tags(Vec::new()),
             limit: 100,
-            url: T::URL.to_string(),
         }
     }
 
@@ -134,20 +164,64 @@ impl<T: ClientTypes + ClientInformation + From<ClientBuilder<T>>> ClientBuilder<
         self.limit = limit;
         self
     }
+}
 
-    /// Change the default url for the client
-    pub fn default_url(mut self, url: &str) -> Self {
-        self.url = url.to_string();
-        self
-    }
-
-    /// Convert the builder into the necessary client
-    pub fn build(self) -> Result<T, ValidationError> {
-        T::validate(ValidationType::Tags(&self.tags)).map(|_| T::from(self))
+pub trait QueryBuilderRules: ClientTypes + Sized {
+    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
+        Ok(())
     }
 }
 
-impl<T: Client + ClientInformation> Default for ClientBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {
+    fn create_dispatcher(&self, query: ClientQueryBuilder<T>) -> ClientQueryDispatcher<T> {
+        ClientQueryDispatcher {
+            builder: self.to_owned(),
+            query,
+        }
+    }
+
+    pub fn query(
+        &self,
+        query_fn: impl Fn(ClientQueryBuilder<T>) -> ClientQueryBuilder<T>,
+    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
+        self.query_raw(query_fn(ClientQueryBuilder::new()))
+    }
+
+    pub fn query_raw(
+        &self,
+        query: ClientQueryBuilder<T>,
+    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
+        T::validate(ValidationType::Tags(&query.tags)).map(|()| self.create_dispatcher(query))
+    }
+
+    pub fn dispatch(&self) -> ClientQueryDispatcher<T> {
+        self.create_dispatcher(ClientQueryBuilder::new())
+    }
+}
+
+pub struct ClientQueryDispatcher<T: ClientTypes> {
+    pub builder: ClientBuilder<T>,
+    pub query: ClientQueryBuilder<T>,
+}
+
+impl<T: ClientInformation + ClientTypes> ClientBuilder<T> {
+    pub fn new() -> Self {
+        Self {
+            client: reqwest::Client::new(),
+            url: T::URL.to_string(),
+
+            _marker: PhantomData,
+        }
+    }
+
+    /// Change the default url for the client
+    pub fn default_url(&mut self, url: &str) -> &mut Self {
+        self.url = url.to_string();
+        self
+    }
+}
+
+impl<T: ClientTypes + ClientInformation> Default for ClientBuilder<T> {
     fn default() -> Self {
         Self::new()
     }
