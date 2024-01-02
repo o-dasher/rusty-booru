@@ -1,6 +1,4 @@
 use derive_more::From;
-
-use async_trait::async_trait;
 use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
 
@@ -31,7 +29,6 @@ impl ClientTypes for DanbooruClient {
     type Post = DanbooruPost;
 }
 
-#[async_trait]
 impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
     async fn get_by_id(&self, id: u32) -> Result<Option<DanbooruPost>, reqwest::Error> {
         self.builder

@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
@@ -28,7 +27,6 @@ impl WithCommonQuery for GelbooruClient {
     }
 }
 
-#[async_trait]
 impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
     async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, reqwest::Error> {
         self.builder

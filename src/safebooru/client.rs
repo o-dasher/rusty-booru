@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use derive_more::From;
 
 use crate::shared::client::{
@@ -27,7 +26,6 @@ impl WithCommonQuery for SafebooruClient {
     }
 }
 
-#[async_trait]
 impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient> {
     async fn get_by_id(&self, id: u32) -> Result<Option<SafebooruPost>, reqwest::Error> {
         self.builder

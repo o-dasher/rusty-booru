@@ -1,7 +1,6 @@
 use std::{fmt::Display, marker::PhantomData};
 
 use super::model::{BooruPost, Rating, Sort, Tag, Tags, ValidationError};
-use async_trait::async_trait;
 use itertools::Itertools;
 
 pub struct ClientBuilder<T: ClientTypes> {
@@ -56,13 +55,16 @@ impl<T: ClientInformation + ClientTypes + From<ClientBuilder<T>>> WithClientBuil
     }
 }
 
-#[async_trait]
 pub trait DispatcherTrait<T: ClientTypes> {
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
-    async fn get_by_id(&self, id: u32) -> Result<Option<T::Post>, reqwest::Error>;
+    fn get_by_id(
+        &self,
+        id: u32,
+    ) -> impl std::future::Future<Output = Result<Option<T::Post>, reqwest::Error>> + Send;
 
     /// Directly get a post by its unique Id
-    async fn get(&self) -> Result<Vec<T::Post>, reqwest::Error>;
+    fn get(&self)
+        -> impl std::future::Future<Output = Result<Vec<T::Post>, reqwest::Error>> + Send;
 }
 
 pub trait WithCommonQuery {
