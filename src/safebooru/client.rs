@@ -5,7 +5,7 @@ use crate::shared::client::{
     ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
 };
 
-use super::model::{SafebooruPost, SafebooruRating};
+use super::*;
 
 #[derive(From)]
 pub struct SafebooruClient(pub ClientBuilder<Self>);

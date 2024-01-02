@@ -2,7 +2,7 @@ use derive_more::From;
 use itertools::Itertools;
 use reqwest::{header, header::HeaderMap};
 
-use super::model::*;
+use super::*;
 use crate::shared::{client::*, model::ValidationError};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)

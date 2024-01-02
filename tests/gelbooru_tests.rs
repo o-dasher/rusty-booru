@@ -1,6 +1,6 @@
 mod gelbooru {
     use booru_rs::{
-        gelbooru::{client::GelbooruClient, model::GelbooruRating},
+        gelbooru::{client::GelbooruClient, GelbooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},
             model::Sort,

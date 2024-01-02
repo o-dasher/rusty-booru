@@ -5,7 +5,7 @@ use crate::shared::client::{
     ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, WithCommonQuery,
 };
 
-use super::model::*;
+use super::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
 #[derive(From)]

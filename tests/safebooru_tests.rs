@@ -3,7 +3,7 @@ pub mod generic_tests;
 #[cfg(test)]
 mod safebooru {
     use booru_rs::{
-        safebooru::{client::SafebooruClient, model::SafebooruRating},
+        safebooru::{client::SafebooruClient, SafebooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},
             model::Sort,

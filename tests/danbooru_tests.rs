@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod danbooru {
     use booru_rs::{
-        danbooru::{client::DanbooruClient, model::DanbooruRating},
+        danbooru::{client::DanbooruClient, DanbooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},
             model::Sort,
