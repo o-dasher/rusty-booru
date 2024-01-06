@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::{fmt::Display, marker::PhantomData, sync::Arc};
 
 use crate::generic::{BooruPost, Rating};
 
@@ -32,7 +32,7 @@ pub trait ClientInformation {
 }
 
 pub trait ClientTypes {
-    type Rating: From<Rating> + Display;
+    type Rating: From<Rating> + Display + Clone;
     type Post: Into<BooruPost>;
 }
 
@@ -119,18 +119,19 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation + QueryBuilderRules>
 // query, that can then be passed on to the proper Client that will be able to figure out the
 // proper way to handle the used query at runtime.
 
+#[derive(Clone)]
 pub struct ClientQueryBuilder<T: ClientTypes + QueryBuilderRules> {
     pub tags: Tags<T>,
     pub limit: u32,
 }
 
-impl<T: ClientTypes + QueryBuilderRules> Default for ClientQueryBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules + Clone> Default for ClientQueryBuilder<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: ClientTypes + QueryBuilderRules> ClientQueryBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules + Clone> ClientQueryBuilder<T> {
     pub fn new() -> Self {
         Self {
             tags: Tags(Vec::new()),
@@ -138,49 +139,51 @@ impl<T: ClientTypes + QueryBuilderRules> ClientQueryBuilder<T> {
         }
     }
 
-    pub fn any_tag(mut self, tag: Tag<T>) -> Self {
+    pub fn any_tag(&mut self, tag: Tag<T>) -> &mut Self {
         self.tags.0.push(tag);
         self
     }
 
-    pub fn tag<S: ToString>(self, tag: S) -> Self {
+    pub fn tag<S: ToString>(&mut self, tag: S) -> &mut Self {
         self.any_tag(Tag::Plain(tag.to_string()))
     }
 
-    pub fn sort(self, sort: Sort) -> Self {
+    pub fn sort(&mut self, sort: Sort) -> &mut Self {
         self.any_tag(Tag::Sort(sort))
     }
 
-    pub fn random(self) -> Self {
+    pub fn random(&mut self) -> &mut Self {
         self.sort(Sort::Random)
     }
 
-    pub fn rating(self, rating: T::Rating) -> Self {
+    pub fn rating(&mut self, rating: T::Rating) -> &mut Self {
         self.any_tag(Tag::Rating(rating))
     }
 
-    pub fn blacklist_tag<S: ToString>(self, tag: S) -> Self {
+    pub fn blacklist_tag<S: ToString>(&mut self, tag: S) -> &mut Self {
         self.any_tag(Tag::Blacklist(tag.to_string()))
     }
 
     /// Set how many posts you want to retrieve (100 is the default and maximum)
-    pub fn limit(mut self, limit: u32) -> Self {
+    pub fn limit(&mut self, limit: u32) -> &mut Self {
         self.limit = limit;
         self
     }
 
-    pub fn validate(self) -> Result<ValidatedQuery<T>, ValidationError> {
-        T::validate(ValidationType::Tags(&self.tags)).map(|_| ValidatedQuery(self))
+    pub fn validate(&mut self) -> Result<ValidatedQuery<T>, ValidationError> {
+        T::validate(ValidationType::Tags(&self.tags))
+            .map(|_| ValidatedQuery(Arc::new(self.clone())))
     }
 }
 
-pub struct ValidatedQuery<T: QueryBuilderRules + ClientTypes>(pub ClientQueryBuilder<T>);
+#[derive(Clone)]
+pub struct ValidatedQuery<T: QueryBuilderRules + ClientTypes>(pub Arc<ClientQueryBuilder<T>>);
 
 pub trait QueryBuilderRules: ClientTypes + Sized {
     fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError>;
 }
 
-impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {
+impl<T: ClientTypes + QueryBuilderRules + Clone> ClientBuilder<T> {
     fn create_dispatcher(&self, query: ValidatedQuery<T>) -> ClientQueryDispatcher<T> {
         ClientQueryDispatcher {
             builder: self.to_owned(),
@@ -190,21 +193,23 @@ impl<T: ClientTypes + QueryBuilderRules> ClientBuilder<T> {
 
     pub fn query_raw(
         &self,
-        query: ClientQueryBuilder<T>,
+        query: &mut ClientQueryBuilder<T>,
     ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
-        query.validate().map(|query| self.create_dispatcher(query))
+        query
+            .validate()
+            .map(|query| self.create_dispatcher(query.clone()))
     }
 
     pub fn query(
         &self,
-        query_fn: impl Fn(ClientQueryBuilder<T>) -> ClientQueryBuilder<T>,
+        query_fn: impl Fn(&mut ClientQueryBuilder<T>) -> &mut ClientQueryBuilder<T>,
     ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
-        self.query_raw(query_fn(ClientQueryBuilder::new()))
+        self.query_raw(query_fn(&mut ClientQueryBuilder::new()))
     }
 
     // Dispatches an empty query. Useful if you want to get a post by its id.
     pub fn dispatch(&self) -> ClientQueryDispatcher<T> {
-        self.create_dispatcher(ValidatedQuery(ClientQueryBuilder::new()))
+        self.create_dispatcher(ValidatedQuery(Arc::new(ClientQueryBuilder::new())))
     }
 }
 

@@ -16,6 +16,7 @@ use derive_more::From;
 
 use super::{BooruPost, Rating};
 
+#[derive(Clone)]
 pub struct GenericClient(ClientBuilder<Self>);
 
 impl ClientTypes for GenericClient {
@@ -64,13 +65,13 @@ macro_rules! handle_request {
 }
 
 impl ValidatedQuery<GenericClient> {
-    fn convert<T: ClientTypes + ClientInformation + QueryBuilderRules>(
+    fn convert<T: ClientTypes + ClientInformation + QueryBuilderRules + Clone>(
         &self,
     ) -> ClientQueryBuilder<T> {
         let mut query = ClientQueryBuilder::new();
 
         for tag in self.0.tags.0.iter() {
-            query = query.tag::<Tag<T>>(tag.into());
+            query.tag::<Tag<T>>(tag.into());
         }
 
         query
@@ -82,7 +83,7 @@ impl ValidatedQuery<GenericClient> {
         booru: BooruOption,
     ) -> Result<Option<BooruPost>, GenericClientError> {
         async fn request<
-            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
+            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T> + Clone,
         >(
             query: &ValidatedQuery<GenericClient>,
             id: u32,
@@ -91,7 +92,7 @@ impl ValidatedQuery<GenericClient> {
             ClientQueryDispatcher<T>: DispatcherTrait<T>,
         {
             T::builder()
-                .query_raw(query.convert())?
+                .query_raw(&mut query.convert())?
                 .get_by_id(id)
                 .await
                 .map(|v| v.map(Into::into))
@@ -103,7 +104,7 @@ impl ValidatedQuery<GenericClient> {
 
     pub async fn get(&self, booru: BooruOption) -> Result<Vec<BooruPost>, GenericClientError> {
         async fn request<
-            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T>,
+            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T> + Clone,
         >(
             query: &ValidatedQuery<GenericClient>,
         ) -> Result<Vec<BooruPost>, GenericClientError>
@@ -111,7 +112,7 @@ impl ValidatedQuery<GenericClient> {
             ClientQueryDispatcher<T>: DispatcherTrait<T>,
         {
             T::builder()
-                .query_raw(query.convert())?
+                .query_raw(&mut query.convert())?
                 .get()
                 .await
                 .map_err(Into::into)

@@ -1,14 +1,17 @@
 use derive_more::From;
 
-use crate::shared::{client::{
-    ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-    ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, ValidationType,
-    WithCommonQuery,
-}, ValidationError};
+use crate::shared::{
+    client::{
+        ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
+        ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, ValidationType,
+        WithCommonQuery,
+    },
+    ValidationError,
+};
 
 use super::*;
 
-#[derive(From)]
+#[derive(From, Clone)]
 pub struct SafebooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for SafebooruClient {

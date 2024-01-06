@@ -12,7 +12,7 @@ use crate::shared::{
 use super::*;
 
 /// Client that sends requests to the Gelbooru API to retrieve the data.
-#[derive(From)]
+#[derive(From, Clone)]
 pub struct GelbooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for GelbooruClient {

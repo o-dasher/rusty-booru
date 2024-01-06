@@ -46,6 +46,7 @@ impl<T: ClientInformation + ClientTypes> Display for Tag<T> {
     }
 }
 
+#[derive(Clone)]
 pub struct Tags<T: ClientTypes>(pub Vec<Tag<T>>);
 
 impl<T: ClientTypes + ClientInformation> Tags<T> {
