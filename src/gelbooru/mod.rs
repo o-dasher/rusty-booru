@@ -85,7 +85,7 @@ impl From<GelbooruPost> for BooruPost {
             width: post.width,
             height: post.height,
             md5: post.md5.into(),
-            file_url: post.file_url,
+            file_url: post.file_url.into(),
             tags: post.tags,
             image: post.image.into(),
             source: post.source.into(),

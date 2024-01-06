@@ -19,7 +19,7 @@ pub struct BooruPost {
     pub width: u32,
     pub height: u32,
     pub md5: Option<String>,
-    pub file_url: String,
+    pub file_url: Option<String>,
     pub tags: String,
     pub image: Option<String>,
     pub source: Option<String>,

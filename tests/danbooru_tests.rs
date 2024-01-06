@@ -17,7 +17,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -30,7 +29,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -43,7 +41,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -56,7 +53,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -69,7 +65,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(posts.unwrap().len() == 3);
     }
 
@@ -82,7 +77,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -95,7 +89,6 @@ mod danbooru {
             .get()
             .await;
 
-        assert!(posts.is_ok());
         assert!(!posts.unwrap().is_empty());
     }
 
@@ -107,7 +100,6 @@ mod danbooru {
             .get_by_id(9423)
             .await;
 
-        assert!(post.is_ok());
         assert_eq!(
             "15a1b49c26f5c684807a2f0b838f9e4c",
             post.unwrap().unwrap().md5.unwrap()
