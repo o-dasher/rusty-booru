@@ -2,7 +2,7 @@ pub mod generic_tests;
 
 #[cfg(test)]
 mod safebooru {
-    use booru_rs::{
+    use rusty_booru::{
         safebooru::{client::SafebooruClient, SafebooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod danbooru {
-    use booru_rs::{
+    use rusty_booru::{
         danbooru::{client::DanbooruClient, DanbooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},

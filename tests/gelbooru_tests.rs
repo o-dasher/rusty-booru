@@ -1,5 +1,5 @@
 mod gelbooru {
-    use booru_rs::{
+    use rusty_booru::{
         gelbooru::{client::GelbooruClient, GelbooruRating},
         shared::{
             client::{DispatcherTrait, WithClientBuilder},

@@ -5,7 +5,12 @@ use derive_more::From;
 use serde::Deserialize;
 use strum::Display;
 
-use crate::generic::{BooruPost, Rating};
+use crate::{
+    generic::{BooruPost, Rating},
+    shared::client::ClientInformation,
+};
+
+use self::client::SafebooruClient;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SafebooruPost {
@@ -68,7 +73,7 @@ impl From<SafebooruPost> for BooruPost {
             width: post.width,
             height: post.height,
             md5: None,
-            file_url: None,
+            file_url: format!("{}/images/{}", SafebooruClient::URL, post.image),
             tags: post.tags,
             image: post.image.into(),
             source: None,
