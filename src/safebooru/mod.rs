@@ -73,7 +73,7 @@ impl From<SafebooruPost> for BooruPost {
             width: post.width,
             height: post.height,
             md5: None,
-            file_url: format!("{}/images/{}", SafebooruClient::URL, post.image),
+            file_url: format!("{}/images/4491/{}", SafebooruClient::URL, post.image),
             tags: post.tags,
             image: post.image.into(),
             source: None,
