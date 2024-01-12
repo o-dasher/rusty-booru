@@ -5,7 +5,7 @@ mod danbooru {
         shared::{
             client::{DispatcherTrait, WithClientBuilder},
             Sort,
-        },
+        }, generic::client::GenericClient,
     };
 
     #[tokio::test]
