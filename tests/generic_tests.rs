@@ -6,8 +6,6 @@ mod generic {
     async fn get_posts_with_tag() {
         let posts = GenericClient::query()
             .tag("kafuu_chino")
-            .validate()
-            .unwrap()
             .get(BooruOption::Gelbooru)
             .await;
 
@@ -17,8 +15,6 @@ mod generic {
     #[tokio::test]
     async fn assert_file_url_safebooru() {
         let post = GenericClient::query()
-            .validate()
-            .unwrap()
             .get_by_id(4683505, BooruOption::Safebooru)
             .await
             .unwrap()
@@ -30,4 +26,5 @@ mod generic {
                 == "https://safebooru.org/images/4491/d0e26173ad1896ca7c187c85a9d38f55329927b9.jpg"
         )
     }
+
 }

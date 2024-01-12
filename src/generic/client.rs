@@ -3,16 +3,14 @@ use crate::{
     gelbooru::client::GelbooruClient,
     safebooru::client::SafebooruClient,
     shared::{
+        self,
         client::{
             ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher,
-            ClientTypes, DispatcherTrait, QueryBuilderRules, ValidatedQuery, ValidationType,
-            WithClientBuilder,
+            ClientTypes, DispatcherTrait, WithClientBuilder,
         },
-        Tag, ValidationError,
+        Tag,
     },
 };
-
-use derive_more::From;
 
 use super::{BooruPost, Rating};
 
@@ -28,15 +26,6 @@ pub enum BooruOption {
     Gelbooru,
     Safebooru,
     Danbooru,
-}
-
-#[derive(thiserror::Error, Debug, From)]
-pub enum GenericClientError {
-    #[error(transparent)]
-    Reqwest(reqwest::Error),
-
-    #[error(transparent)]
-    ValidationErrror(ValidationError),
 }
 
 impl<T: ClientTypes> From<&Tag<GenericClient>> for Tag<T> {
@@ -64,13 +53,11 @@ macro_rules! handle_request {
     }
 }
 
-impl ValidatedQuery<GenericClient> {
-    fn convert<T: ClientTypes + ClientInformation + QueryBuilderRules + Clone>(
-        &self,
-    ) -> ClientQueryBuilder<T> {
+impl ClientQueryBuilder<GenericClient> {
+    fn convert<T: ClientTypes + ClientInformation + Clone>(&self) -> ClientQueryBuilder<T> {
         let mut query = ClientQueryBuilder::new();
 
-        for tag in self.0.tags.0.iter() {
+        for tag in self.tags.0.iter() {
             query.tag::<Tag<T>>(tag.into());
         }
 
@@ -81,18 +68,16 @@ impl ValidatedQuery<GenericClient> {
         &self,
         id: u32,
         booru: BooruOption,
-    ) -> Result<Option<BooruPost>, GenericClientError> {
-        async fn request<
-            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T> + Clone,
-        >(
-            query: &ValidatedQuery<GenericClient>,
+    ) -> Result<Option<BooruPost>, shared::Error> {
+        async fn request<T: ClientTypes + ClientInformation + WithClientBuilder<T> + Clone>(
+            query: &ClientQueryBuilder<GenericClient>,
             id: u32,
-        ) -> Result<Option<BooruPost>, GenericClientError>
+        ) -> Result<Option<BooruPost>, shared::Error>
         where
             ClientQueryDispatcher<T>: DispatcherTrait<T>,
         {
             T::builder()
-                .query_raw(&mut query.convert())?
+                .query_raw(&mut query.convert())
                 .get_by_id(id)
                 .await
                 .map(|v| v.map(Into::into))
@@ -102,17 +87,15 @@ impl ValidatedQuery<GenericClient> {
         handle_request!(booru, (self, id))
     }
 
-    pub async fn get(&self, booru: BooruOption) -> Result<Vec<BooruPost>, GenericClientError> {
-        async fn request<
-            T: ClientTypes + ClientInformation + QueryBuilderRules + WithClientBuilder<T> + Clone,
-        >(
-            query: &ValidatedQuery<GenericClient>,
-        ) -> Result<Vec<BooruPost>, GenericClientError>
+    pub async fn get(&self, booru: BooruOption) -> Result<Vec<BooruPost>, shared::Error> {
+        async fn request<T: ClientTypes + ClientInformation + WithClientBuilder<T> + Clone>(
+            query: &ClientQueryBuilder<GenericClient>,
+        ) -> Result<Vec<BooruPost>, shared::Error>
         where
             ClientQueryDispatcher<T>: DispatcherTrait<T>,
         {
             T::builder()
-                .query_raw(&mut query.convert())?
+                .query_raw(&mut query.convert())
                 .get()
                 .await
                 .map_err(Into::into)
@@ -120,12 +103,6 @@ impl ValidatedQuery<GenericClient> {
         }
 
         handle_request!(booru, (self))
-    }
-}
-
-impl QueryBuilderRules for GenericClient {
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        Ok(())
     }
 }
 

@@ -1,12 +1,11 @@
 use derive_more::From;
 
 use crate::shared::{
+    self,
     client::{
         ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-        ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, ValidationType,
-        WithCommonQuery,
+        ImplementedWithCommonQuery, QueryLike, QueryMode, WithCommonQuery,
     },
-    ValidationError,
 };
 
 use super::*;
@@ -31,7 +30,7 @@ impl WithCommonQuery for SafebooruClient {
 }
 
 impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient> {
-    async fn get_by_id(&self, id: u32) -> Result<Option<SafebooruPost>, reqwest::Error> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<SafebooruPost>, shared::Error> {
         self.builder
             .client
             .get(&format!("{}/index.php", &self.builder.url))
@@ -41,9 +40,10 @@ impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient>
             .json::<Vec<SafebooruPost>>()
             .await
             .map(|r| r.into_iter().next())
+            .map_err(Into::into)
     }
 
-    async fn get(&self) -> Result<Vec<SafebooruPost>, reqwest::Error> {
+    async fn get(&self) -> Result<Vec<SafebooruPost>, shared::Error> {
         self.builder
             .client
             .get(format!("{}/index.php", &self.builder.url))
@@ -52,11 +52,6 @@ impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient>
             .await?
             .json::<Vec<SafebooruPost>>()
             .await
-    }
-}
-
-impl QueryBuilderRules for SafebooruClient {
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        Ok(())
+            .map_err(Into::into)
     }
 }

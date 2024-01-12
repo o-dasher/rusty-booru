@@ -1,9 +1,8 @@
 use derive_more::From;
-use itertools::Itertools;
-use reqwest::{header, header::HeaderMap};
+use reqwest::{header, header::HeaderMap, Response};
 
 use super::*;
-use crate::shared::{client::*, ValidationError};
+use crate::shared::{self, client::*};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
 pub fn get_headers() -> HeaderMap {
@@ -29,45 +28,75 @@ impl ClientTypes for DanbooruClient {
     type Post = DanbooruPost;
 }
 
+#[derive(Deserialize)]
+enum DanbooruErrorKind {
+    #[serde(rename = "PostQuery::TagLimitError")]
+    TagLimitError,
+}
+
+impl From<DanbooruErrorKind> for shared::Error {
+    fn from(val: DanbooruErrorKind) -> Self {
+        match val {
+            DanbooruErrorKind::TagLimitError => Self::TagLimitError,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct DanbooruError {
+    pub error: DanbooruErrorKind,
+}
+
+impl From<DanbooruError> for shared::Error {
+    fn from(value: DanbooruError) -> Self {
+        value.error.into()
+    }
+}
+
+async fn send_error<T>(response: Response) -> Result<T, shared::Error> {
+    Err(response.json::<DanbooruError>().await.map(Into::into)?)
+}
+
 impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
-    async fn get_by_id(&self, id: u32) -> Result<Option<DanbooruPost>, reqwest::Error> {
-        self.builder
+    async fn get_by_id(&self, id: u32) -> Result<Option<DanbooruPost>, shared::Error> {
+        let response = self
+            .builder
             .client
             .get(format!("{}/posts/{id}.json", self.builder.url))
             .headers(get_headers())
             .send()
-            .await?
-            .json::<DanbooruPost>()
-            .await
-            .map(Some)
+            .await?;
+
+        if response.status().is_success() {
+            response
+                .json::<DanbooruPost>()
+                .await
+                .map(Into::into)
+                .map_err(Into::into)
+        } else {
+            send_error(response).await?
+        }
     }
 
-    async fn get(&self) -> Result<Vec<DanbooruPost>, reqwest::Error> {
-        self.builder
+    async fn get(&self) -> Result<Vec<DanbooruPost>, shared::Error> {
+        let response = self
+            .builder
             .client
             .get(format!("{}/posts.json", self.builder.url))
             .headers(get_headers())
             .query(&[
-                ("limit", &self.query.0.limit.to_string()),
-                ("tags", &self.query.0.tags.unpack()),
+                ("limit", &self.query.limit.to_string()),
+                ("tags", &self.query.tags.unpack()),
             ])
             .send()
-            .await?
-            .json::<Vec<DanbooruPost>>()
-            .await
-    }
-}
+            .await?;
 
-impl QueryBuilderRules for DanbooruClient {
-    fn validate(validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        match validates {
-            ValidationType::Tags(tags) => {
-                if tags.0.iter().filter(|t| t.is_plain()).collect_vec().len() > 2 {
-                    Err(ValidationError::TooManyTags)?
-                }
-            }
+        if response.status().is_success() {
+            Ok(response
+                .json::<Vec<DanbooruPost>>()
+                .await?)
+        } else {
+            send_error(response).await?
         }
-
-        Ok(())
     }
 }

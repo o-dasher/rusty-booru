@@ -1,12 +1,11 @@
 use derive_more::From;
 
 use crate::shared::{
+    self,
     client::{
         ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-        ImplementedWithCommonQuery, QueryBuilderRules, QueryLike, QueryMode, ValidationType,
-        WithCommonQuery,
+        ImplementedWithCommonQuery, QueryLike, QueryMode, WithCommonQuery,
     },
-    ValidationError,
 };
 
 use super::*;
@@ -32,7 +31,7 @@ impl WithCommonQuery for GelbooruClient {
 }
 
 impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
-    async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, reqwest::Error> {
+    async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, shared::Error> {
         self.builder
             .client
             .get(format!("{}/index.php", &self.builder.url))
@@ -42,9 +41,10 @@ impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
             .json::<GelbooruResponse>()
             .await
             .map(|r| r.posts.into_iter().next())
+            .map_err(Into::into)
     }
 
-    async fn get(&self) -> Result<Vec<GelbooruPost>, reqwest::Error> {
+    async fn get(&self) -> Result<Vec<GelbooruPost>, shared::Error> {
         self.builder
             .client
             .get(format!("{}/index.php", &self.builder.url))
@@ -54,11 +54,6 @@ impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
             .json::<GelbooruResponse>()
             .await
             .map(|r| r.posts)
-    }
-}
-
-impl QueryBuilderRules for GelbooruClient {
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError> {
-        Ok(())
+            .map_err(Into::into)
     }
 }

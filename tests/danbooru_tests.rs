@@ -13,7 +13,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino"))
-            .unwrap()
             .get()
             .await;
 
@@ -25,7 +24,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").rating(DanbooruRating::General))
-            .unwrap()
             .get()
             .await;
 
@@ -37,7 +35,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").sort(Sort::Rating))
-            .unwrap()
             .get()
             .await;
 
@@ -49,7 +46,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").blacklist_tag(DanbooruRating::Explicit))
-            .unwrap()
             .get()
             .await;
 
@@ -61,7 +57,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").limit(3))
-            .unwrap()
             .get()
             .await;
 
@@ -73,7 +68,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").tag("bangs").limit(3))
-            .unwrap()
             .get()
             .await;
 
@@ -85,7 +79,6 @@ mod danbooru {
         let posts = DanbooruClient::builder()
             .default_url("https://testbooru.donmai.us")
             .query(|q| q.tag("kafuu_chino").random())
-            .unwrap()
             .get()
             .await;
 
@@ -104,6 +97,17 @@ mod danbooru {
             "15a1b49c26f5c684807a2f0b838f9e4c",
             post.unwrap().unwrap().md5.unwrap()
         );
+    }
+
+    #[tokio::test]
+    async fn query_too_many_tags() {
+        let posts = DanbooruClient::builder()
+            .default_url("https://testbooru.donmai.us")
+            .query(|q| q.tag("kafuu_chino").tag("loli").tag("maid").random())
+            .get()
+            .await;
+
+        assert!(posts.is_err());
     }
 
     #[test]

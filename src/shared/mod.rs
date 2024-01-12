@@ -3,14 +3,19 @@ use derive_is_enum_variant::is_enum_variant;
 use itertools::Itertools;
 use std::fmt::Display;
 use strum::Display;
-use thiserror::Error;
 
 pub mod client;
 
-#[derive(Error, Debug)]
-pub enum ValidationError {
-    #[error("Requested booru client with way too many tags.")]
-    TooManyTags,
+#[derive(derive_more::From, Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Reqwest(reqwest::Error),
+
+    #[error("Searched for way too many tags on a client that does not support it.")]
+    TagLimitError,
+
+    #[error("Something rather fishy happened while using rusty-booru.")]
+    Unexpected,
 }
 
 #[derive(Debug, Clone, Display)]

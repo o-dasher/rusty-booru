@@ -1,8 +1,8 @@
-use std::{fmt::Display, marker::PhantomData, sync::Arc};
+use std::{fmt::Display, marker::PhantomData};
 
 use crate::generic::{BooruPost, Rating};
 
-use super::{Sort, Tag, Tags, ValidationError};
+use super::{Sort, Tag, Tags};
 use itertools::Itertools;
 
 pub struct ClientBuilder<T: ClientTypes> {
@@ -20,10 +20,6 @@ impl<T: ClientTypes> Clone for ClientBuilder<T> {
             _marker: self._marker,
         }
     }
-}
-
-pub enum ValidationType<'a, T: ClientTypes> {
-    Tags(&'a Tags<T>),
 }
 
 pub trait ClientInformation {
@@ -62,25 +58,26 @@ pub trait DispatcherTrait<T: ClientTypes> {
     fn get_by_id(
         &self,
         id: u32,
-    ) -> impl std::future::Future<Output = Result<Option<T::Post>, reqwest::Error>> + Send;
+    ) -> impl std::future::Future<Output = Result<Option<T::Post>, crate::shared::Error>> + Send;
 
     /// Directly get a post by its unique Id
-    fn get(&self)
-        -> impl std::future::Future<Output = Result<Vec<T::Post>, reqwest::Error>> + Send;
+    fn get(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<T::Post>, crate::shared::Error>> + Send;
 }
 
 pub trait WithCommonQuery {
     fn common_query_type() -> QueryLike;
 }
 
-pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation + QueryBuilderRules> {
-    fn get_query(query: &ValidatedQuery<T>, query_mode: QueryMode) -> QueryVec;
+pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation> {
+    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec;
 }
 
-impl<T: WithCommonQuery + ClientTypes + ClientInformation + QueryBuilderRules>
-    ImplementedWithCommonQuery<T> for ClientQueryDispatcher<T>
+impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommonQuery<T>
+    for ClientQueryDispatcher<T>
 {
-    fn get_query(query: &ValidatedQuery<T>, query_mode: QueryMode) -> QueryVec {
+    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec {
         let query_type = T::common_query_type();
 
         let mut base = match query_type {
@@ -99,8 +96,8 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation + QueryBuilderRules>
             QueryLike::Gelbooru => match query_mode {
                 QueryMode::Single(id) => vec![("id", id.to_string())],
                 QueryMode::Multiple => vec![
-                    ("limit", query.0.limit.to_string()),
-                    ("tags", query.0.tags.unpack()),
+                    ("limit", query.limit.to_string()),
+                    ("tags", query.tags.unpack()),
                 ],
             },
         }
@@ -120,18 +117,18 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation + QueryBuilderRules>
 // proper way to handle the used query at runtime.
 
 #[derive(Clone)]
-pub struct ClientQueryBuilder<T: ClientTypes + QueryBuilderRules> {
+pub struct ClientQueryBuilder<T: ClientTypes> {
     pub tags: Tags<T>,
     pub limit: u32,
 }
 
-impl<T: ClientTypes + QueryBuilderRules + Clone> Default for ClientQueryBuilder<T> {
+impl<T: ClientTypes + Clone> Default for ClientQueryBuilder<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: ClientTypes + QueryBuilderRules + Clone> ClientQueryBuilder<T> {
+impl<T: ClientTypes + Clone> ClientQueryBuilder<T> {
     pub fn new() -> Self {
         Self {
             tags: Tags(Vec::new()),
@@ -169,53 +166,36 @@ impl<T: ClientTypes + QueryBuilderRules + Clone> ClientQueryBuilder<T> {
         self.limit = limit;
         self
     }
-
-    pub fn validate(&mut self) -> Result<ValidatedQuery<T>, ValidationError> {
-        T::validate(ValidationType::Tags(&self.tags))
-            .map(|_| ValidatedQuery(Arc::new(self.clone())))
-    }
 }
 
-#[derive(Clone)]
-pub struct ValidatedQuery<T: QueryBuilderRules + ClientTypes>(pub Arc<ClientQueryBuilder<T>>);
-
-pub trait QueryBuilderRules: ClientTypes + Sized {
-    fn validate(_validates: ValidationType<'_, Self>) -> Result<(), ValidationError>;
-}
-
-impl<T: ClientTypes + QueryBuilderRules + Clone> ClientBuilder<T> {
-    fn create_dispatcher(&self, query: ValidatedQuery<T>) -> ClientQueryDispatcher<T> {
+impl<T: ClientTypes + Clone> ClientBuilder<T> {
+    fn create_dispatcher(&self, query: &mut ClientQueryBuilder<T>) -> ClientQueryDispatcher<T> {
         ClientQueryDispatcher {
             builder: self.to_owned(),
-            query,
+            query: query.clone(),
         }
     }
 
-    pub fn query_raw(
-        &self,
-        query: &mut ClientQueryBuilder<T>,
-    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
-        query
-            .validate()
-            .map(|query| self.create_dispatcher(query.clone()))
+    pub fn query_raw(&self, query: &mut ClientQueryBuilder<T>) -> ClientQueryDispatcher<T> {
+        self.create_dispatcher(query)
     }
 
     pub fn query(
         &self,
         query_fn: impl Fn(&mut ClientQueryBuilder<T>) -> &mut ClientQueryBuilder<T>,
-    ) -> Result<ClientQueryDispatcher<T>, ValidationError> {
+    ) -> ClientQueryDispatcher<T> {
         self.query_raw(query_fn(&mut ClientQueryBuilder::new()))
     }
 
     // Dispatches an empty query. Useful if you want to get a post by its id.
     pub fn dispatch(&self) -> ClientQueryDispatcher<T> {
-        self.create_dispatcher(ValidatedQuery(Arc::new(ClientQueryBuilder::new())))
+        self.create_dispatcher(&mut ClientQueryBuilder::new())
     }
 }
 
-pub struct ClientQueryDispatcher<T: ClientTypes + QueryBuilderRules> {
+pub struct ClientQueryDispatcher<T: ClientTypes> {
     pub builder: ClientBuilder<T>,
-    pub query: ValidatedQuery<T>,
+    pub query: ClientQueryBuilder<T>,
 }
 
 impl<T: ClientInformation + ClientTypes> ClientBuilder<T> {
