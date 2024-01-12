@@ -22,6 +22,10 @@ pub struct SafebooruPost {
     pub hash: String,
     pub tags: String,
     pub image: String,
+
+    /// The directory where the safebooru image file is stored at.
+    pub directory: String,
+
     /// This is basically equivalent to `updated_at` in a Danbooru post. Except
     /// that it's provided as a UNIX timestamp. Safebooru provides no `created_at`
     /// field.
@@ -73,7 +77,13 @@ impl From<SafebooruPost> for BooruPost {
             width: post.width,
             height: post.height,
             md5: None,
-            file_url: format!("{}/images/4491/{}", SafebooruClient::URL, post.image).into(),
+            file_url: format!(
+                "{}/images/{}/{}",
+                SafebooruClient::URL,
+                post.directory,
+                post.image
+            )
+            .into(),
             tags: post.tags,
             image: post.image.into(),
             source: None,
