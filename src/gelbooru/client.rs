@@ -35,7 +35,7 @@ impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
         self.builder
             .client
             .get(format!("{}/index.php", &self.builder.url))
-            .query(&Self::get_query(&self.query, QueryMode::Single(id)))
+            .query(&Self::get_query(QueryMode::Single(id)))
             .send()
             .await?
             .json::<GelbooruResponse>()
@@ -48,7 +48,7 @@ impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
         self.builder
             .client
             .get(format!("{}/index.php", &self.builder.url))
-            .query(&Self::get_query(&self.query, QueryMode::Multiple))
+            .query(&Self::get_query(QueryMode::Multiple(&self.query)))
             .send()
             .await?
             .json::<GelbooruResponse>()

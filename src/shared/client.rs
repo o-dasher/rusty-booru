@@ -38,9 +38,9 @@ pub enum QueryLike {
     Gelbooru,
 }
 
-pub enum QueryMode {
+pub enum QueryMode<'a, T: ClientTypes + ClientInformation> {
     Single(u32),
-    Multiple,
+    Multiple(&'a ClientQueryBuilder<T>),
 }
 
 pub trait WithClientBuilder<T: ClientTypes> {
@@ -71,13 +71,13 @@ pub trait WithCommonQuery {
 }
 
 pub trait ImplementedWithCommonQuery<T: ClientTypes + ClientInformation> {
-    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec;
+    fn get_query(query_mode: QueryMode<T>) -> QueryVec;
 }
 
 impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommonQuery<T>
     for ClientQueryDispatcher<T>
 {
-    fn get_query(query: &ClientQueryBuilder<T>, query_mode: QueryMode) -> QueryVec {
+    fn get_query(query_mode: QueryMode<T>) -> QueryVec {
         let query_type = T::common_query_type();
 
         let mut base = match query_type {
@@ -95,7 +95,7 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommon
         let extension = match query_type {
             QueryLike::Gelbooru => match query_mode {
                 QueryMode::Single(id) => vec![("id", id.to_string())],
-                QueryMode::Multiple => vec![
+                QueryMode::Multiple(query) => vec![
                     ("limit", query.limit.to_string()),
                     ("tags", query.tags.unpack()),
                 ],
