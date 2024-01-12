@@ -28,33 +28,28 @@ impl ClientTypes for DanbooruClient {
     type Post = DanbooruPost;
 }
 
-#[derive(Deserialize)]
-enum DanbooruErrorKind {
+#[derive(Deserialize, Debug, thiserror::Error, Display)]
+pub enum DanbooruError {
     #[serde(rename = "PostQuery::TagLimitError")]
     TagLimitError,
 }
 
-impl From<DanbooruErrorKind> for shared::Error {
-    fn from(val: DanbooruErrorKind) -> Self {
-        match val {
-            DanbooruErrorKind::TagLimitError => Self::TagLimitError,
-        }
-    }
-}
-
 #[derive(Deserialize)]
-struct DanbooruError {
-    pub error: DanbooruErrorKind,
+struct DanbooruErrorStruct {
+    pub error: DanbooruError,
 }
 
-impl From<DanbooruError> for shared::Error {
-    fn from(value: DanbooruError) -> Self {
+impl From<DanbooruErrorStruct> for shared::Error {
+    fn from(value: DanbooruErrorStruct) -> Self {
         value.error.into()
     }
 }
 
 async fn send_error<T>(response: Response) -> Result<T, shared::Error> {
-    Err(response.json::<DanbooruError>().await.map(Into::into)?)
+    Err(response
+        .json::<DanbooruErrorStruct>()
+        .await
+        .map(Into::into)?)
 }
 
 impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
@@ -92,9 +87,7 @@ impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
             .await?;
 
         if response.status().is_success() {
-            Ok(response
-                .json::<Vec<DanbooruPost>>()
-                .await?)
+            Ok(response.json::<Vec<DanbooruPost>>().await?)
         } else {
             send_error(response).await?
         }

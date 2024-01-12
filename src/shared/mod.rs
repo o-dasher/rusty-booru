@@ -1,3 +1,5 @@
+use crate::danbooru::client::DanbooruError;
+
 use self::client::{ClientInformation, ClientTypes};
 use derive_is_enum_variant::is_enum_variant;
 use itertools::Itertools;
@@ -6,15 +8,14 @@ use strum::Display;
 
 pub mod client;
 
-#[derive(derive_more::From, Debug, thiserror::Error)]
+#[derive(derive_more::From, Debug, thiserror::Error, Display)]
 pub enum Error {
     #[error(transparent)]
     Reqwest(reqwest::Error),
 
-    #[error("Searched for way too many tags on a client that does not support it.")]
-    TagLimitError,
+    #[error(transparent)]
+    Danbooru(DanbooruError),
 
-    #[error("Something rather fishy happened while using rusty-booru.")]
     Unexpected,
 }
 

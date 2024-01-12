@@ -11,8 +11,8 @@ mod danbooru {
     #[tokio::test]
     async fn get_posts_with_tag() {
         let posts = DanbooruClient::builder()
-            .default_url("https://testbooru.donmai.us")
-            .query(|q| q.tag("kafuu_chino"))
+            .default_url("https://danbooru.donmai.us")
+            .query(|q| q.tag("my_chemical_romance"))
             .get()
             .await;
 
