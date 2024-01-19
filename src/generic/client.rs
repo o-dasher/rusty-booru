@@ -1,6 +1,9 @@
+use strum::EnumIter;
+
 use crate::{
     danbooru::client::DanbooruClient,
     gelbooru::client::GelbooruClient,
+    generic::AutoCompleteItem,
     safebooru::client::SafebooruClient,
     shared::{
         self,
@@ -22,6 +25,7 @@ impl ClientTypes for GenericClient {
     type Post = BooruPost;
 }
 
+#[derive(EnumIter)]
 pub enum BooruOption {
     Gelbooru,
     Safebooru,
@@ -40,16 +44,20 @@ impl<T: ClientTypes> From<&Tag<GenericClient>> for Tag<T> {
 }
 
 macro_rules! handle_request {
-    (@ $t:ident, $($args:expr,)*) => {
-        request::<$t>($($args,)*).await
+    (@ $t:ident, ($($args:expr),*), ($($gen:ty),*)) => {
+        request::<$t, $($gen,)*>($($args,)*).await
+    };
+
+    ($booru_option:expr, ($($args:expr),*), ($($gen:ty),*)) => {
+        match $booru_option {
+            BooruOption::Gelbooru => handle_request!(@ GelbooruClient, ($($args),*), ($($gen),*)),
+            BooruOption::Safebooru => handle_request!(@ SafebooruClient, ($($args),*), ($($gen),*)),
+            BooruOption::Danbooru => handle_request!(@ DanbooruClient, ($($args),*), ($($gen),*)),
+        }
     };
 
     ($booru_option:expr, ($($args:expr),*)) => {
-        match $booru_option {
-            BooruOption::Gelbooru => handle_request!(@ GelbooruClient, $($args,)*),
-            BooruOption::Safebooru => handle_request!(@ SafebooruClient, $($args,)*),
-            BooruOption::Danbooru => handle_request!(@ DanbooruClient, $($args,)*),
-        }
+        handle_request!($booru_option, ($($args),*), ())
     }
 }
 
@@ -62,6 +70,31 @@ impl ClientQueryBuilder<GenericClient> {
         }
 
         query
+    }
+
+    pub async fn get_autocomplete<In: Into<String> + Send>(
+        &self,
+        booru: BooruOption,
+        input: In,
+    ) -> Result<Vec<AutoCompleteItem>, reqwest::Error> {
+        async fn request<
+            T: ClientTypes + ClientInformation + WithClientBuilder<T> + Clone,
+            In: Into<String> + Send,
+        >(
+            query: &ClientQueryBuilder<GenericClient>,
+            input: In,
+        ) -> Result<Vec<AutoCompleteItem>, reqwest::Error>
+        where
+            ClientQueryDispatcher<T>: QueryDispatcher<T>,
+        {
+            T::builder()
+                .query_raw(&mut query.convert())
+                .get_autocomplete(input)
+                .await
+                .map_err(Into::into)
+        }
+
+        handle_request!(booru, (self, input), (In))
     }
 
     pub async fn get_by_id(
