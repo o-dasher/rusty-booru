@@ -1,8 +1,9 @@
 pub mod client;
 
+use serde::{Deserialize, Serialize};
 use strum::Display;
 
-#[derive(Display, Clone)]
+#[derive(Display, Debug, Clone)]
 #[strum(serialize_all = "lowercase")]
 pub enum Rating {
     Explicit,
@@ -12,6 +13,7 @@ pub enum Rating {
     General,
 }
 
+#[derive(Debug)]
 pub struct BooruPost {
     pub id: u32,
     pub created_at: Option<String>,
@@ -24,4 +26,10 @@ pub struct BooruPost {
     pub image: Option<String>,
     pub source: Option<String>,
     pub rating: Rating,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AutoCompleteItem {
+    pub value: String,
+    pub label: String,
 }

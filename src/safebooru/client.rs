@@ -1,10 +1,13 @@
 use derive_more::From;
 
-use crate::shared::{
-    self,
-    client::{
-        ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-        ImplementedWithCommonQuery, QueryLike, QueryMode, WithCommonQuery,
+use crate::{
+    generic::AutoCompleteItem,
+    shared::{
+        self,
+        client::{
+            ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes,
+            ImplementedWithCommonQuery, QueryDispatcher, QueryLike, QueryMode, WithCommonQuery,
+        },
     },
 };
 
@@ -29,7 +32,21 @@ impl WithCommonQuery for SafebooruClient {
     }
 }
 
-impl DispatcherTrait<SafebooruClient> for ClientQueryDispatcher<SafebooruClient> {
+impl QueryDispatcher<SafebooruClient> for ClientQueryDispatcher<SafebooruClient> {
+    async fn get_autocomplete<In: Into<String> + Send>(
+        &self,
+        input: In,
+    ) -> Result<Vec<crate::generic::AutoCompleteItem>, reqwest::Error> {
+        self.builder
+            .client
+            .get(format!("{}/autocomplete.php", self.builder.url))
+            .query(&[("q", input.into())])
+            .send()
+            .await?
+            .json::<Vec<AutoCompleteItem>>()
+            .await
+    }
+
     async fn get_by_id(&self, id: u32) -> Result<Option<SafebooruPost>, shared::Error> {
         self.builder
             .client

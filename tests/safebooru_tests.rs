@@ -5,7 +5,7 @@ mod safebooru {
     use rusty_booru::{
         safebooru::{client::SafebooruClient, SafebooruRating},
         shared::{
-            client::{DispatcherTrait, WithClientBuilder},
+            client::{QueryDispatcher, WithClientBuilder},
             Sort,
         },
     };

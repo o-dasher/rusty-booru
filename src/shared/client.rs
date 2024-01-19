@@ -1,6 +1,6 @@
 use std::{fmt::Display, marker::PhantomData};
 
-use crate::generic::{BooruPost, Rating};
+use crate::generic::{AutoCompleteItem, BooruPost, Rating};
 
 use super::{Sort, Tag, Tags};
 use itertools::Itertools;
@@ -53,7 +53,12 @@ impl<T: ClientInformation + ClientTypes + From<ClientBuilder<T>>> WithClientBuil
     }
 }
 
-pub trait DispatcherTrait<T: ClientTypes> {
+pub trait QueryDispatcher<T: ClientTypes> {
+    fn get_autocomplete<In: Into<String> + Send>(
+        &self,
+        input: In,
+    ) -> impl std::future::Future<Output = Result<Vec<AutoCompleteItem>, reqwest::Error>> + Send;
+
     /// Pack the [`ClientBuilder`] and sent the request to the API to retrieve the posts
     fn get_by_id(
         &self,

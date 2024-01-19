@@ -2,7 +2,7 @@ mod gelbooru {
     use rusty_booru::{
         gelbooru::{client::GelbooruClient, GelbooruRating},
         shared::{
-            client::{DispatcherTrait, WithClientBuilder},
+            client::{QueryDispatcher, WithClientBuilder},
             Sort,
         },
     };

@@ -26,5 +26,4 @@ mod generic {
                 == "https://safebooru.org/images/4491/d0e26173ad1896ca7c187c85a9d38f55329927b9.jpg"
         )
     }
-
 }

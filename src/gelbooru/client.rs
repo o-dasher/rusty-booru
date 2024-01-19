@@ -1,10 +1,13 @@
 use derive_more::From;
 
-use crate::shared::{
-    self,
-    client::{
-        ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes, DispatcherTrait,
-        ImplementedWithCommonQuery, QueryLike, QueryMode, WithCommonQuery,
+use crate::{
+    generic::AutoCompleteItem,
+    shared::{
+        self,
+        client::{
+            ClientBuilder, ClientInformation, ClientQueryDispatcher, ClientTypes,
+            ImplementedWithCommonQuery, QueryDispatcher, QueryLike, QueryMode, WithCommonQuery,
+        },
     },
 };
 
@@ -30,7 +33,26 @@ impl WithCommonQuery for GelbooruClient {
     }
 }
 
-impl DispatcherTrait<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
+impl QueryDispatcher<GelbooruClient> for ClientQueryDispatcher<GelbooruClient> {
+    async fn get_autocomplete<In: Into<String> + Send>(
+        &self,
+        input: In,
+    ) -> Result<Vec<crate::generic::AutoCompleteItem>, reqwest::Error> {
+        self.builder
+            .client
+            .get(format!("{}/index.php", self.builder.url))
+            .query(&[
+                ("limit", self.query.limit.to_string().as_str()),
+                ("page", "autocomplete2"),
+                ("type", "tag_query"),
+                ("term", &input.into()),
+            ])
+            .send()
+            .await?
+            .json::<Vec<AutoCompleteItem>>()
+            .await
+    }
+
     async fn get_by_id(&self, id: u32) -> Result<Option<GelbooruPost>, shared::Error> {
         self.builder
             .client

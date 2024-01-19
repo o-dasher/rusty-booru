@@ -2,7 +2,10 @@ use derive_more::From;
 use reqwest::{header, header::HeaderMap, Response};
 
 use super::*;
-use crate::shared::{self, client::*};
+use crate::{
+    generic::AutoCompleteItem,
+    shared::{self, client::*},
+};
 
 // This is only here because of Danbooru, thanks Danbooru, really cool :)
 pub fn get_headers() -> HeaderMap {
@@ -52,7 +55,27 @@ async fn send_error<T>(response: Response) -> Result<T, shared::Error> {
         .map(Into::into)?)
 }
 
-impl DispatcherTrait<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
+impl QueryDispatcher<DanbooruClient> for ClientQueryDispatcher<DanbooruClient> {
+    async fn get_autocomplete<In: Into<String> + Send>(
+        &self,
+        input: In,
+    ) -> Result<Vec<AutoCompleteItem>, reqwest::Error> {
+        self.builder
+            .client
+            .get(format!("{}/autocomplete.json", self.builder.url))
+            .headers(get_headers())
+            .query(&[
+                ("limit", self.query.limit.to_string().as_str()),
+                ("search[type]", "tag_query"),
+                ("search[query]", &input.into()),
+                ("version", "1"),
+            ])
+            .send()
+            .await?
+            .json::<Vec<AutoCompleteItem>>()
+            .await
+    }
+
     async fn get_by_id(&self, id: u32) -> Result<Option<DanbooruPost>, shared::Error> {
         let response = self
             .builder

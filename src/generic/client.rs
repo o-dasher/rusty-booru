@@ -6,7 +6,7 @@ use crate::{
         self,
         client::{
             ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher,
-            ClientTypes, DispatcherTrait, WithClientBuilder,
+            ClientTypes, QueryDispatcher, WithClientBuilder,
         },
         Tag,
     },
@@ -74,7 +74,7 @@ impl ClientQueryBuilder<GenericClient> {
             id: u32,
         ) -> Result<Option<BooruPost>, shared::Error>
         where
-            ClientQueryDispatcher<T>: DispatcherTrait<T>,
+            ClientQueryDispatcher<T>: QueryDispatcher<T>,
         {
             T::builder()
                 .query_raw(&mut query.convert())
@@ -92,7 +92,7 @@ impl ClientQueryBuilder<GenericClient> {
             query: &ClientQueryBuilder<GenericClient>,
         ) -> Result<Vec<BooruPost>, shared::Error>
         where
-            ClientQueryDispatcher<T>: DispatcherTrait<T>,
+            ClientQueryDispatcher<T>: QueryDispatcher<T>,
         {
             T::builder()
                 .query_raw(&mut query.convert())

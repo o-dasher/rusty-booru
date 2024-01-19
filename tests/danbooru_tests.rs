@@ -3,7 +3,7 @@ mod danbooru {
     use rusty_booru::{
         danbooru::{client::DanbooruClient, DanbooruRating},
         shared::{
-            client::{DispatcherTrait, WithClientBuilder},
+            client::{QueryDispatcher, WithClientBuilder},
             Sort,
         }, generic::client::GenericClient,
     };
