@@ -7,7 +7,6 @@ use crate::generic::{AutoCompleteItem, BooruPost, Rating};
 
 use super::{Sort, Tag, Tags};
 use itertools::Itertools;
-use strum::Display;
 
 #[derive(Debug)]
 pub struct ClientBuilder<T: ClientTypes> {
