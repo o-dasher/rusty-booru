@@ -34,7 +34,7 @@ pub struct GelbooruPost {
 }
 
 /// Gelbooru's API response with a list a posts
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GelbooruResponse {
     #[serde(rename = "post")]
     pub posts: Vec<GelbooruPost>,

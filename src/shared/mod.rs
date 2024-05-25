@@ -33,7 +33,7 @@ pub enum Sort {
     Random,
 }
 
-#[derive(is_enum_variant, Clone)]
+#[derive(is_enum_variant, Debug, Clone)]
 pub enum Tag<T: ClientTypes> {
     Plain(String),
     Blacklist(String),
@@ -52,7 +52,7 @@ impl<T: ClientInformation + ClientTypes> Display for Tag<T> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Tags<T: ClientTypes>(pub Vec<Tag<T>>);
 
 impl<T: ClientTypes + ClientInformation> Tags<T> {

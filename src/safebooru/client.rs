@@ -13,7 +13,7 @@ use crate::{
 
 use super::*;
 
-#[derive(From, Clone)]
+#[derive(From, Debug, Clone)]
 pub struct SafebooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for SafebooruClient {

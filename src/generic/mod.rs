@@ -13,7 +13,7 @@ pub enum Rating {
     General,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BooruPost {
     pub id: u32,
     pub created_at: Option<String>,

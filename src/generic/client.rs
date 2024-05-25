@@ -8,8 +8,8 @@ use crate::{
     shared::{
         self,
         client::{
-            ClientBuilder, ClientInformation, ClientQueryBuilder, ClientQueryDispatcher,
-            ClientTypes, QueryDispatcher, WithClientBuilder,
+            ClientInformation, ClientQueryBuilder, ClientQueryDispatcher, ClientTypes,
+            QueryDispatcher, WithClientBuilder,
         },
         Tag,
     },
@@ -17,8 +17,8 @@ use crate::{
 
 use super::{BooruPost, Rating};
 
-#[derive(Clone)]
-pub struct GenericClient(ClientBuilder<Self>);
+#[derive(Debug, Clone)]
+pub struct GenericClient();
 
 impl ClientTypes for GenericClient {
     type Rating = Rating;

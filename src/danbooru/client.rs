@@ -18,7 +18,7 @@ pub fn get_headers() -> HeaderMap {
 }
 
 /// Client that sends requests to the Danbooru API to retrieve the data.
-#[derive(From, Clone)]
+#[derive(From, Debug, Clone)]
 pub struct DanbooruClient(pub ClientBuilder<Self>);
 
 impl ClientInformation for DanbooruClient {

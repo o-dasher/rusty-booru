@@ -1,10 +1,15 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+};
 
 use crate::generic::{AutoCompleteItem, BooruPost, Rating};
 
 use super::{Sort, Tag, Tags};
 use itertools::Itertools;
+use strum::Display;
 
+#[derive(Debug)]
 pub struct ClientBuilder<T: ClientTypes> {
     pub client: reqwest::Client,
     pub url: String,
@@ -28,7 +33,7 @@ pub trait ClientInformation {
 }
 
 pub trait ClientTypes {
-    type Rating: From<Rating> + Display + Clone;
+    type Rating: From<Rating> + Display + Debug + Clone;
     type Post: Into<BooruPost>;
 }
 
@@ -121,7 +126,7 @@ impl<T: WithCommonQuery + ClientTypes + ClientInformation> ImplementedWithCommon
 // query, that can then be passed on to the proper Client that will be able to figure out the
 // proper way to handle the used query at runtime.
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ClientQueryBuilder<T: ClientTypes> {
     pub tags: Tags<T>,
     pub limit: u32,
@@ -198,6 +203,7 @@ impl<T: ClientTypes + Clone> ClientBuilder<T> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ClientQueryDispatcher<T: ClientTypes> {
     pub builder: ClientBuilder<T>,
     pub query: ClientQueryBuilder<T>,
